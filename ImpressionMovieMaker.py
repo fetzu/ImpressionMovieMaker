@@ -1,44 +1,57 @@
-### [   ImpressionMovieMaker v0.0.1-alpha || Made 'fo shits 'n giggles by bonj   ] ###
+### [   ImpressionMovieMaker || Made 'fo shits 'n giggles by Julien 'bonj' Bono   ] ###
 
 ## [ CLI is cooler with docopt ]
 """
-Usage: ImpressionMovieMaker.py [-vzsdh] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTPATH]
+Usage: ImpressionMovieMaker.py [-dvzsph] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
 Arguments:
   RUSHESFOLDER      Dossier contenant les rushes.
   LOGODEBUT         Logo de début (troupe).
   LOGOFIN           Logo de fin (AAR).
   MUSIQUE           Musique pour l'impression.
-  OUTPATH           Chemin vers le fichier de sortie.
+  OUTFILE           Chemin vers le fichier de sortie.
+  COMPAGNIE         Nom de la compagnie.
+  EXERCICE          Nom de l'exercice.
 
 Options:
   -h --help
   -s                Pour les hipster: ordre des séquences aléatoire.
+  -d                Mode drone: les clips de drones de plus de 1 minute sont pris en compte. Attention: possiblement instable.
   -v                Mode verbose (montre les étapes de travail en détail, en anglais dans le texte).
   -z                Mode "zen"/silencieux (rien dans la console).
-  -d                DEV: Montre les arguments passés au programme. 
+  -p                DEV: Montre les arguments passés au programme. 
 """
 
 
 ## [ IMPORTS be imports ]
 import os
 import random
+import datetime
 from moviepy.editor import *
 from tkinter import Tk
 from tkinter.filedialog import askdirectory, askopenfile, asksaveasfile
+from tkinter.simpledialog import askstring
 from docopt import docopt
+from colorama import init, Fore, Style
+
+# Sets colorama to reset Fore/Style after each print
+init(autoreset=True)
+
+# "The time for us is now"
+now = datetime.datetime.now()
 
 # Needed to intitialize docopt (for CLI)
 if __name__ == '__main__':
     arguments = docopt(__doc__)
-    if arguments['-d'] is True: print(arguments)
+    if arguments['-p'] is True: print(arguments)
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "0.0.2-alpha"
+VERSION = "0.1.0"
 
-# Uh-oh, we might need FFMPEG for dist/packaging with pyinstaller
-#os.environ["IMAGEIO_FFMPEG_EXE"] = "C:\\ffmpeg.exe"
+# Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
+#FFMPEG_BINARY = os.getenv('FFMPEG_BINARY', 'ffmpeg-imageio')
+#IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
 
 # Check if arguments were passed through the CLI. If they were: set the constants, if they weren't: promp the user !
 # The names are pretty self explanatory (if they aren't read the docs!)
@@ -54,29 +67,36 @@ else: LOGOFIN = arguments['LOGOFIN']
 if arguments['MUSIQUE'] is None: MUSIQUE = askopenfile(title="Choisir une musique")
 else: MUSIQUE = arguments['MUSIQUE']
 
-if arguments['OUTPATH'] is None: OUTPATH = asksaveasfile(title="Choisir ou sauvegarder le résultat")
-else: OUTPATH = arguments['OUTPATH']
+if arguments['OUTFILE'] is None: OUTFILE = asksaveasfile(title="Choisir ou sauvegarder le résultat")
+else: OUTFILE = arguments['OUTFILE']
+
+if arguments['COMPAGNIE'] is None: COMPAGNIE = input("Compagnie? ")
+else: COMPAGNIE = arguments['COMPAGNIE']
+
+if arguments['EXERCICE'] is None: EXERCICE = input("Nom de l'exercice? ")
+else: EXERCICE = arguments['EXERCICE']
 
 
 ## [ Main App logic ] ##
 # I'm leaving my mark, just because I can
-if arguments['-z'] is False: print("'Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.' -Dr. Ian Malcolm, Jurassic Park")
-if arguments['-z'] is False: print("ImpressionMovieMaker version {} by Julien 'bonj' Bono.".format(VERSION))
+if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "'Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.' -Dr. Ian Malcolm, Jurassic Park")
+if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "ImpressionMovieMaker version {} by Julien 'bonj' Bono.".format(VERSION))
 
 # List all the videos inside the FOLDER (and its subfolders) and push the paths into the clips array
 clips = [os.path.join(r,file) for r,d,f in os.walk(RUSHESFOLDER) for file in f]
-if arguments['-z'] is False: print("Number of rushes provided: {}".format(len(clips)))
+if arguments['-v'] is True: print("Number of rushes provided: {}".format(len(clips)))
 
-# From clips, select a random number of files to remove from list. Make sure that the total number of rushes does not exceed 40.
+# From clips, select a random number of files to remove from list. Make sure that the total number of rushes does not exceed 35.
 clipCutter = random.randint(int(len(clips)/4), int(len(clips)/2))
-while (len(clips)-clipCutter) > 40:
-    clipCutter = random.randint(clipCutter, clipCutter*2)
-if arguments['-z'] is False: print("ClipCutter(tm) will chop down {} rushes !".format(clipCutter))
-for i in range(int(clipCutter)):
+while (len(clips)-clipCutter) > 35:
+    clipCutter = random.randint(clipCutter+5, clipCutter+10)
+if arguments['-v'] is True: print("ClipCutter™ will chop down {} rushes !".format(clipCutter))
+for i in range(clipCutter):
     clips.pop(random.randint(0, len(clips)-1))
 
 # Create a rushQueue array and populate it will all the clips from the clips array as VideoFileClip, selecting a random part of each clip to keep
 rushQueue = []
+if arguments['-z'] is False: print("Preparing clips...")
 for clip in clips:
     rushQueue.append(VideoFileClip(clip))
 
@@ -90,33 +110,36 @@ for i in range(len(rushQueue)):
 
     if arguments['-v'] is True: print("Working on clip #{} with a length of {}".format(i, max))
 
-    # Check that the clip is not too short (ie shorter than 6 seconds), else remove said clip and break
-    if max < 6 or max > 60:
-        if arguments['-v'] is True: print("Clip #{} too short/long, skipping.".format(i))
+    # Check the clip's length. If shorter than 6 or longer than 60, discard that clip.
+    if arguments['-d'] is False and (max < 6 or max > 60):
+            if arguments['-v'] is True: print(Fore.RED + "Clip #{} too short/long, skipping.".format(i))
+    if arguments['-d'] is True and  max < 6:
+            if arguments['-v'] is True: print(Fore.RED + "Clip #{} too short, skipping.".format(i))
 
     # Cut select a random part of the clip; do this until clip is less than 5 seconds
     else:
         while max > 5:
             cb = int(random.randint(2, int(max/2)))
             ce = -2 #int(random.randint(-2, int(-(max/2)))) #TODO: Replace with random value between -2 and -x !
-            if arguments['-v'] is True: print("Clip #{}: duration {}s | Cut from {}s to {}s".format(i, max, cb, ce))
+            if arguments['-v'] is True: print(Style.DIM + "Clip #{}: duration {}s | Cut from {}s to {}s".format(i, max, cb, ce))
             rushQueue[i] = rushQueue[i].subclip(cb, ce)
             max = int(rushQueue[i].duration) 
-            if arguments['-v'] is True: print("Clip #{} done with a new duration of {}s".format(i, max))
+            if arguments['-v'] is True: print(Style.DIM +  "Clip #{} done with a new duration of {}s".format(i, max))
         # Append the result to rushList
         rushList.append(rushQueue[i])
-        if arguments['-v'] is True: print("Clip #{} appended !".format(i))
+        if arguments['-v'] is True: print(Fore.GREEN + "Clip #{} appended !".format(i))
 
 # Randomize the clips order (uncomment to make things more fun)
-if arguments['-v'] & arguments['-s'] is True: print("Randomizing clip order.")
+if arguments['-v'] & arguments['-s'] is True: print("Randomizing clip order...")
 if arguments['-s'] is True: random.shuffle(rushList)
 
 # Concatenate all the clips inside the rushList into impression array (will make it easier to change the soudtrack)
 impression = concatenate_videoclips(rushList)
 
 # Let's take care of that soundtrack !
-# Reduce the overall volume to 0.3x
-impression = impression.volumex(0.3)
+if arguments['-z'] is False: print("Compositing the audio...")
+# Reduce the overall volume to 10%
+impression = impression.volumex(0.1)
 # Load the selected music into an AudioFileClip, and set its duration to the impression's duration
 music = AudioFileClip(MUSIQUE)
 music = music.set_duration(impression.duration)
@@ -124,11 +147,20 @@ music = music.set_duration(impression.duration)
 soundTrack = CompositeAudioClip([impression.audio, music])
 impression.audio = soundTrack
 
+# Let's take care of that title card !
+if arguments['-z'] is False: print("Generating title card...")
+# Render the three parts (exercice, company and date) separately
+exerciceCard = TextClip(EXERCICE, size = (1920,1080), fontsize = 125, kerning=5, color = 'white').set_duration(3).set_position((0, -75))
+compagnieCard = TextClip(COMPAGNIE, size = (1920,1080), fontsize = 45, color = 'grey').set_duration(3).set_position((-500, 50))
+dateCard = TextClip(now.strftime('%d/%m/%Y'), size = (1920,1080), fontsize = 45, color = 'grey').set_duration(3).set_position((450, 50))
+# Put them all together into titleCard as a single image (greatly speeds up rendering)
+titleCard = CompositeVideoClip([compagnieCard, exerciceCard, dateCard]).to_ImageClip(t='1').set_duration(3)
+
 # Now that we have all our clips, let's put the final piece together by adding the intro logo, the title card and the outro logo
-if arguments['-v'] is True: print("Putting it all together...")
+if arguments['-z'] is False: print("Putting it all together...")
 videoTimeLine = []
 videoTimeLine.append(VideoFileClip(LOGODEBUT))
-#videoTimeLine.append | TODO: Add title card here !
+videoTimeLine.append(titleCard)
 videoTimeLine.append(impression)
 videoTimeLine.append(VideoFileClip(LOGOFIN))
 
@@ -138,6 +170,6 @@ videoTimeLine.append(VideoFileClip(LOGOFIN))
 impression = concatenate_videoclips(videoTimeLine)
 
 # Let's render that shit !
-if arguments['-v'] is True: print("Starting final rendering...")
-impression.to_videofile(OUTPATH)
-if arguments['-v'] is True: print("Done ! See the results at {}".format(OUTPATH))
+if arguments['-z'] is False: print("Starting final rendering...")
+impression.to_videofile(OUTFILE)
+if arguments['-z'] is False: print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
