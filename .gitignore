@@ -1,0 +1,10 @@
+## Julien's ignores
+# Python stuff
+__pycache__/
+env/
+venv/
+build/
+dist/
+ImpressionMovieMaker.spec
+# VSCode configs
+.vscode/
