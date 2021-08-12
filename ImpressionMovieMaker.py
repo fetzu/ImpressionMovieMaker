@@ -108,7 +108,7 @@ for i in range(len(rushQueue)):
         if arguments['-v'] is True: print("Clip #{} appended !".format(i))
 
 # Randomize the clips order (uncomment to make things more fun)
-if arguments['-v'] is True: print("Randomizing clip order.")
+if arguments['-v'] & arguments['-s'] is True: print("Randomizing clip order.")
 if arguments['-s'] is True: random.shuffle(rushList)
 
 # Concatenate all the clips inside the rushList into impression array (will make it easier to change the soudtrack)
