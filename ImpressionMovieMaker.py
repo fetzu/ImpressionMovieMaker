@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
@@ -80,6 +80,22 @@ else: EXERCICE = arguments['EXERCICE']
 # I'm leaving my mark, just because I can
 if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "'Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.' -Dr. Ian Malcolm, Jurassic Park")
 if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "ImpressionMovieMaker version {} by Julien 'bonj' Bono.".format(VERSION))
+
+# clipTrimmer™ is a function to remove parts of the beggining and end of a clip until it's short enough.. but not too short !
+def clipTrimmer(max):
+    while max > 4:
+        cb = int(random.randint(2, int(max/2)))
+        ce = -3 #int(random.randint(-2, int(-(max/2)))) #TODO: Replace with random value between -2 and -x !
+        if arguments['-v'] is True: print(Style.DIM + "Clip #{}: duration {}s | Cut from {}s to {}s".format(i, max, cb, ce))
+        rushQueue[i] = rushQueue[i].subclip(cb, ce)
+        max = int(rushQueue[i].duration)
+        if max < 2 and arguments['-v'] is True: 
+            print(Fore.RED + Style.DIM + "Cut too deep, skipping clip {}".format(i))
+            return
+        if arguments['-v'] is True: print(Style.DIM +  "Clip #{} done with a new duration of {}s".format(i, max))
+    # Append the result to rushList
+    rushList.append(rushQueue[i])
+    if arguments['-v'] is True: print(Fore.GREEN + "Clip #{} appended !".format(i))
 
 # List all the videos inside the FOLDER (and its subfolders) and push the paths into the clips array
 clips = [os.path.join(r,file) for r,d,f in os.walk(RUSHESFOLDER) for file in f]
@@ -115,21 +131,8 @@ for i in range(len(rushQueue)):
     elif arguments['-d'] is True and  max < 6:
             if arguments['-v'] is True: print(Fore.RED + "Clip #{} too short, skipping.".format(i))
 
-    # Cut select a random part of the clip; do this until clip is less than 5 seconds
-    else:
-        while max > 4:
-            cb = int(random.randint(2, int(max/2)))
-            ce = -3 #int(random.randint(-2, int(-(max/2)))) #TODO: Replace with random value between -2 and -x !
-            if arguments['-v'] is True: print(Style.DIM + "Clip #{}: duration {}s | Cut from {}s to {}s".format(i, max, cb, ce))
-            rushQueue[i] = rushQueue[i].subclip(cb, ce)
-            max = int(rushQueue[i].duration)
-            if max < 2 and arguments['-v'] is True: 
-                print(Fore.RED + Style.DIM + "Cut too deep, skipping clip {}".format(i))
-                break
-            if arguments['-v'] is True: print(Style.DIM +  "Clip #{} done with a new duration of {}s".format(i, max))
-        # Append the result to rushList
-        rushList.append(rushQueue[i])
-        if arguments['-v'] is True: print(Fore.GREEN + "Clip #{} appended !".format(i))
+    # Call upon clipTrimmer™
+    clipTrimmer(max)
 
 # Randomize the clips order (uncomment to make things more fun)
 if arguments['-v'] & arguments['-s'] is True: print("Randomizing clip order...")
