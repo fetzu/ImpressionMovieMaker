@@ -47,11 +47,11 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
-#FFMPEG_BINARY = os.getenv('FFMPEG_BINARY', 'ffmpeg-imageio')
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
+#os.environ['IMAGEIO_FFMPEG_EX'] = "C:\\ffmpeg.exe"
 
 # Check if arguments were passed through the CLI. If they were: set the constants, if they weren't: promp the user !
 # The names are pretty self explanatory (if they aren't read the docs!)
@@ -136,17 +136,6 @@ if arguments['-s'] is True: random.shuffle(rushList)
 # Concatenate all the clips inside the rushList into impression array (will make it easier to change the soudtrack)
 impression = concatenate_videoclips(rushList)
 
-# Let's take care of that soundtrack !
-if arguments['-z'] is False: print("Compositing the audio...")
-# Reduce the overall volume to 10%
-impression = impression.volumex(0.1)
-# Load the selected music into an AudioFileClip, and set its duration to the impression's duration
-music = AudioFileClip(MUSIQUE)
-music = music.set_duration(impression.duration)
-# Set the combination of both into soundTrack, and set soundTrack as the impression's soundtrack
-soundTrack = CompositeAudioClip([impression.audio, music])
-impression.audio = soundTrack
-
 # Let's take care of that title card !
 if arguments['-z'] is False: print("Generating title card...")
 # Render the three parts (exercice, company and date) separately
@@ -155,21 +144,34 @@ compagnieCard = TextClip(COMPAGNIE, size = (1920,1080), fontsize = 45, color = '
 dateCard = TextClip(now.strftime('%d/%m/%Y'), size = (1920,1080), fontsize = 45, color = 'grey').set_duration(3).set_position((450, 50))
 # Put them all together into titleCard as a single image (greatly speeds up rendering)
 titleCard = CompositeVideoClip([compagnieCard, exerciceCard, dateCard]).to_ImageClip(t='1').set_duration(3)
+# Put the tileCard and the impression together and concatenate them
+impressionPlayList = [titleCard, impression]
+impressionWithTitle = concatenate_videoclips(impressionPlayList)
+
+# Let's take care of that soundtrack !
+if arguments['-z'] is False: print("Compositing the audio...")
+# Reduce the overall volume to 10%
+impressionWithTitle = impressionWithTitle.volumex(0.1)
+# Load the selected music into an AudioFileClip, and set its duration to the impression's duration
+music = AudioFileClip(MUSIQUE)
+music = music.set_duration(impressionWithTitle.duration)
+# Set the combination of both into soundTrack, add a fade-out at the end and set soundTrack as the impression's soundtrack
+soundTrack = CompositeAudioClip([impressionWithTitle.audio, music]).fx(afx.audio_fadeout, 3)
+impressionWithTitle.audio = soundTrack
 
 # Now that we have all our clips, let's put the final piece together by adding the intro logo, the title card and the outro logo
 if arguments['-z'] is False: print("Putting it all together...")
 videoTimeLine = []
 videoTimeLine.append(VideoFileClip(LOGODEBUT))
-videoTimeLine.append(titleCard)
-videoTimeLine.append(impression)
+videoTimeLine.append(impressionWithTitle)
 videoTimeLine.append(VideoFileClip(LOGOFIN))
 
 
 # Concatenate all the clips inside the IMPRESSION array
 #print(rushList)
-impression = concatenate_videoclips(videoTimeLine)
+impressionFinal = concatenate_videoclips(videoTimeLine)
 
 # Let's render that shit !
 if arguments['-z'] is False: print("Starting final rendering...")
-impression.to_videofile(OUTFILE)
+impressionFinal.to_videofile(OUTFILE)
 if arguments['-z'] is False: print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
