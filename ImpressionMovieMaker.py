@@ -29,7 +29,7 @@ import random
 import datetime
 from moviepy.editor import *
 from tkinter import Tk
-from tkinter.filedialog import askdirectory, askopenfile, asksaveasfile
+from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfilename
 from tkinter.simpledialog import askstring
 from docopt import docopt
 from colorama import init, Fore, Style
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
@@ -58,16 +58,16 @@ VERSION = "0.1.2"
 if arguments['RUSHESFOLDER'] is None: RUSHESFOLDER = askdirectory(title='Choisir dossier des rushes')
 else: RUSHESFOLDER = arguments['RUSHESFOLDER']
 
-if arguments['LOGODEBUT'] is None: LOGODEBUT = askopenfile(title="Choisir logo d'intro (de troupe)")
+if arguments['LOGODEBUT'] is None: LOGODEBUT = askopenfilename(title="Choisir logo d'intro (de troupe)")
 else: LOGODEBUT = arguments['LOGODEBUT']
 
-if arguments['LOGOFIN'] is None: LOGOFIN = askopenfile(title="Choisir logo de fin (AAR)")
+if arguments['LOGOFIN'] is None: LOGOFIN = askopenfilename(title="Choisir logo de fin (AAR)")
 else: LOGOFIN = arguments['LOGOFIN']
 
-if arguments['MUSIQUE'] is None: MUSIQUE = askopenfile(title="Choisir une musique")
+if arguments['MUSIQUE'] is None: MUSIQUE = askopenfilename(title="Choisir une musique")
 else: MUSIQUE = arguments['MUSIQUE']
 
-if arguments['OUTFILE'] is None: OUTFILE = asksaveasfile(title="Choisir ou sauvegarder le résultat")
+if arguments['OUTFILE'] is None: OUTFILE = asksaveasfilename(title="Choisir ou sauvegarder le résultat")
 else: OUTFILE = arguments['OUTFILE']
 
 if arguments['COMPAGNIE'] is None: COMPAGNIE = input("Compagnie? ")
@@ -75,7 +75,6 @@ else: COMPAGNIE = arguments['COMPAGNIE']
 
 if arguments['EXERCICE'] is None: EXERCICE = input("Nom de l'exercice? ")
 else: EXERCICE = arguments['EXERCICE']
-
 
 ## [ Main App logic ] ##
 # I'm leaving my mark, just because I can
