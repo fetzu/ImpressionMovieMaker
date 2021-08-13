@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
@@ -88,7 +88,7 @@ if arguments['-v'] is True: print("Number of rushes provided: {}".format(len(cli
 
 # From clips, select a random number of files to remove from list. Make sure that the total number of rushes does not exceed 35.
 clipCutter = random.randint(int(len(clips)/4), int(len(clips)/2))
-while (len(clips)-clipCutter) > 35:
+while (len(clips)-clipCutter) > 40:
     clipCutter = random.randint(clipCutter+5, clipCutter+10)
 if arguments['-v'] is True: print("ClipCutter™ will chop down {} rushes !".format(clipCutter))
 for i in range(clipCutter):
@@ -110,20 +110,23 @@ for i in range(len(rushQueue)):
 
     if arguments['-v'] is True: print("Working on clip #{} with a length of {}".format(i, max))
 
-    # Check the clip's length. If shorter than 6 or longer than 60, discard that clip.
-    if arguments['-d'] is False and (max < 6 or max > 60):
+    # Check the clip's length. If shorter than 7 or longer than 60, discard that clip
+    if arguments['-d'] is False and (max < 7 or max > 60):
             if arguments['-v'] is True: print(Fore.RED + "Clip #{} too short/long, skipping.".format(i))
-    if arguments['-d'] is True and  max < 6:
+    elif arguments['-d'] is True and  max < 6:
             if arguments['-v'] is True: print(Fore.RED + "Clip #{} too short, skipping.".format(i))
 
     # Cut select a random part of the clip; do this until clip is less than 5 seconds
     else:
-        while max > 5:
+        while max > 4:
             cb = int(random.randint(2, int(max/2)))
-            ce = -2 #int(random.randint(-2, int(-(max/2)))) #TODO: Replace with random value between -2 and -x !
+            ce = -3 #int(random.randint(-2, int(-(max/2)))) #TODO: Replace with random value between -2 and -x !
             if arguments['-v'] is True: print(Style.DIM + "Clip #{}: duration {}s | Cut from {}s to {}s".format(i, max, cb, ce))
             rushQueue[i] = rushQueue[i].subclip(cb, ce)
-            max = int(rushQueue[i].duration) 
+            max = int(rushQueue[i].duration)
+            if max < 2 and arguments['-v'] is True: 
+                print(Fore.RED + Style.DIM + "Cut too deep, skipping clip {}".format(i))
+                break
             if arguments['-v'] is True: print(Style.DIM +  "Clip #{} done with a new duration of {}s".format(i, max))
         # Append the result to rushList
         rushList.append(rushQueue[i])
