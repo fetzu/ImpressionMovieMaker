@@ -4,33 +4,33 @@
 
 ### Requirements:
 - Python 3 (https://www.python.org/downloads/)
-- Imagemagick (https://imagemagick.org/script/download.php) /!\ **Installer avec les options "Install FFMPEG" et "Install legacy utilities" selectionnées !** /!\
+- Imagemagick (https://imagemagick.org/script/download.php) /!\ **Install with options "Install FFMPEG" and "Install legacy utilities" checked o Windows!** /!\
 
 ### Installation
-Après avoir installé Python3 et Imagemagick, télécharger "ImpressionMovieMaker.zip" et l'extraire. Dans l'invité de commande, naviguer dans le dossier et "*pip install -r requirements.txt*"
+After installing Python3 and Imagemagick, download "ImpressionMovieMaker.zip" and extract it. In the command prompt, navigate to the folder and "*pip install -r requirements.txt*"
 
-## Utilisation
-Il est possible d'executer simplement ImpressionMovieMaker.py pour une utilisation "interactive".
+## Usage
+Simply run ImpressionMovieMaker.py for a half-assed GUI experience.
 
-Pour les plus avisés, une interface CLI existe ("*python ImpressionMovieMaker.py --help*" est votre ami).
+For those who like it old-school (and nicer), a CLI interface exists ("*python ImpressionMovieMaker.py --help*" is your friend).
 
 ```
 Usage: ImpressionMovieMaker.py [-dvzsph] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
-    RUSHESFOLDER      Dossier contenant les rushes.
-    LOGODEBUT         Logo de début (troupe).
-    LOGOFIN           Logo de fin (AAR).
-    MUSIQUE           Musique pour l'impression.
-    OUTFILE           Chemin vers le fichier de sortie.
-    COMPAGNIE         Nom de la compagnie.
-    EXERCICE          Nom de l'exercice.
+    RUSHESFOLDER      Path to folder containing the rushes.
+    LOGODEBUT         Starting logo.
+    LOGOFIN           Ending logo.
+    MUSIQUE           Path to the impression's song track/music.
+    OUTFILE           Path for the output file.
+    COMPAGNIE         Name of the company.
+    EXERCICE          Name of the exercice.
 
   Options:
     -h --help
-    -s                Pour les hipster: ordre des séquences aléatoire.
-    -d                Mode drone: les clips de drones de plus de 1 minute sont pris en compte. Attention: possiblement instable.
-    -v                Mode verbose (montre les étapes de travail en détail, en anglais dans le texte).
-    -z                Mode "zen"/silencieux (rien dans la console).
-    -p                DEV: Montre les arguments passés au programme.
+    -s                For hipsters: randomises the sequencing of the rushes.
+    -d                Drone mode: rushes longer than 1 minute are used. Warning: memory consuming and possibly unstable.
+    -v                Verbose mode.
+    -z                "zen"/silent mode (almost nothing is logged to the terminal).
+    -p                DEV: Shows the arguments passed to the program.
 ```
