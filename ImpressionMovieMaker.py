@@ -2,24 +2,26 @@
 
 ## [ CLI is cooler with docopt ]
 """
-Usage: ImpressionMovieMaker.py [-dvzsph] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpbods] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
-Arguments:
-  RUSHESFOLDER      Dossier contenant les rushes.
-  LOGODEBUT         Logo de début (troupe).
-  LOGOFIN           Logo de fin (AAR).
-  MUSIQUE           Musique pour l'impression.
-  OUTFILE           Chemin vers le fichier de sortie.
-  COMPAGNIE         Nom de la compagnie.
-  EXERCICE          Nom de l'exercice.
+  Arguments:
+    RUSHESFOLDER      Path to folder containing the rushes.
+    LOGODEBUT         Starting logo.
+    LOGOFIN           Ending logo.
+    MUSIQUE           Path to the impression's song track/music.
+    OUTFILE           Path for the output file.
+    COMPAGNIE         Name of the company.
+    EXERCICE          Name of the exercice.
 
-Options:
-  -h --help
-  -s                Pour les hipster: ordre des séquences aléatoire.
-  -d                Mode drone: les clips de drones de plus de 1 minute sont pris en compte. Attention: possiblement instable.
-  -v                Mode verbose (montre les étapes de travail en détail, en anglais dans le texte).
-  -z                Mode "zen"/silencieux (rien dans la console).
-  -p                DEV: Montre les arguments passés au programme. 
+  Options:
+    -h --help
+    -v                Verbose mode.
+    -z                Zen/silent mode (almost nothing is logged to the terminal).
+    -p                DEV: Shows the arguments passed to the program and details of clipTrimmer™.
+    -b                BeatMode: cuts to the beat of the song [default mode].
+    -o                OnsetMode: cuts to the onsets of the song.
+    -d                Drone mode: rushes longer than 1 minute are used. Warning: memory consuming and possibly unstable.
+    -s                For hipsters: randomises the sequencing of the rushes.
 """
 
 
@@ -27,12 +29,19 @@ Options:
 import os
 import random
 import datetime
+import warnings
+import librosa
 from moviepy.editor import *
 from tkinter import Tk
 from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfilename
 from tkinter.simpledialog import askstring
 from docopt import docopt
 from colorama import init, Fore, Style
+
+
+## [ Some INIT settings ]
+# Gets read of those pesky Pysoundfile/audioread librosa warnings.
+warnings.filterwarnings("ignore")
 
 # Sets colorama to reset Fore/Style after each print
 init(autoreset=True)
@@ -47,7 +56,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "0.1.4"
+VERSION = "0.2.0"
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
@@ -76,33 +85,71 @@ else: COMPAGNIE = arguments['COMPAGNIE']
 if arguments['EXERCICE'] is None: EXERCICE = input("Nom de l'exercice? ")
 else: EXERCICE = arguments['EXERCICE']
 
-## [ Main App logic ] ##
-# I'm leaving my mark, just because I can
-if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "'Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.' -Dr. Ian Malcolm, Jurassic Park")
-if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "ImpressionMovieMaker version {} by Julien 'bonj' Bono.".format(VERSION))
 
-# clipTrimmer™ is a function to remove parts of the beggining and end of a clip until it's short enough.. but not too short !
-def clipTrimmer(max):
-    while max > 4:
-        cb = int(random.randint(2, int(max/2)))
-        ce = -3 #int(random.randint(-2, int(-(max/2)))) #TODO: Replace with random value between -2 and -x !
-        if arguments['-v'] is True: print(Style.DIM + "Clip #{}: duration {}s | Cut from {}s to {}s".format(i, max, cb, ce))
-        rushQueue[i] = rushQueue[i].subclip(cb, ce)
-        max = int(rushQueue[i].duration)
-        if max < 2 and arguments['-v'] is True: 
-            print(Fore.RED + Style.DIM + "Cut too deep, skipping clip {}".format(i))
-            return
-        if arguments['-v'] is True: print(Style.DIM +  "Clip #{} done with a new duration of {}s".format(i, max))
+## [ Some custom FUNCTIONS ]
+# clipTrimmer™ is a function to cut the clips in sync using our betterCutsArray 
+def clipTrimmer(dur, k):
+    cb = random.randint(1, int(dur/5))
+    ce = cb + (betterCutsArray[i+1] - betterCutsArray[i])
+    rushQueue[i] = rushQueue[i].subclip(cb, ce)
+    if arguments['-p'] is True: print(Style.DIM + "Clip #{}: duration {}s | Cut from {}s to {}s".format(i, dur, cb, ce))
+    if arguments['-p'] is True: print(Style.DIM +  "Clip #{} done with a new duration of {}s".format(i, rushQueue[i].duration))
     # Append the result to rushList
     rushList.append(rushQueue[i])
     if arguments['-v'] is True: print(Fore.GREEN + "Clip #{} appended !".format(i))
+
+# arrayTrimmer™ is a function that looks at an array and makes sure the cuts are not too fast and returns the new (slower) cuts to a new array
+def arrayTrimmer(cutsArray, nseq, offset, min):
+    m = 0
+    betterCutsArray = []
+    betterCutsArray.append(cutsArray[offset])
+    while m < nseq:
+        l = 1
+        while cutsArray[offset+l] - cutsArray[offset] < min:
+            l = l + 1
+        betterCutsArray.append(cutsArray[offset+l])
+        offset = offset + l
+        m = m + 1
+    if arguments['-v'] is True: print(Fore.GREEN + "Array has been reduced to {} cuts with a minimum duration of {}s".format(len(betterCutsArray), min))
+    return betterCutsArray
+
+# onsetFinder™ is a function that leverages librosa to find the onsets in the selected song and returns an array of the timestamps
+def onsetFinder(MUSIQUE):
+    if arguments['-v'] is True: print("Detecting cuts using onsetFinder™...")
+    x, sr = librosa.load(MUSIQUE)
+    onset_frames = librosa.onset.onset_detect(x, sr=sr, units='frames')
+    onset_times = list(librosa.frames_to_time(onset_frames, sr=sr))
+    return onset_times
+
+# beatFinder™ is a function that leverages librosa to find the beats in the selected song and returns an array of the timestamps
+def beatFinder(MUSIQUE):
+    if arguments['-v'] is True: print("Detecting cuts using beatFinder™...")
+    x, sr = librosa.load(MUSIQUE)
+    beat, beats = librosa.beat.beat_track(x, sr=sr, units='frames')
+    beat_times = list(librosa.frames_to_time(beats, sr=sr))
+    return beat_times
+
+# findTitleCardLength™ is a function to sync the title card's length to the music (while keeping it longer than 2 seconds)
+def findTitleCardLength():
+    k = 1
+    while cutsArray[k] < 2:
+        k = k + 1
+    titleCardDuration = cutsArray[k]
+    if arguments['-v'] is True: print("Title card duration will be {}s".format(titleCardDuration))
+    return titleCardDuration, k
+
+
+## [ MAIN App logic ]
+# I'm leaving my mark, just because I can
+if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "'Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.' -Dr. Ian Malcolm, Jurassic Park")
+if arguments['-z'] is False: print(Fore.YELLOW + Style.BRIGHT + "ImpressionMovieMaker version {} by Julien 'bonj' Bono.".format(VERSION))
 
 # List all the videos inside the FOLDER (and its subfolders) and push the paths into the clips array
 clips = [os.path.join(r,file) for r,d,f in os.walk(RUSHESFOLDER) for file in f]
 if arguments['-v'] is True: print("Number of rushes provided: {}".format(len(clips)))
 
-# From clips, select a random number of files to remove from list. Make sure that the total number of rushes does not exceed 35.
-clipCutter = random.randint(int(len(clips)/4), int(len(clips)/2))
+# From clips, select a random number of files to remove from list. Make sure that the total number of rushes does not exceed 40.
+clipCutter = random.randint(int(len(clips)/8), int(len(clips)/5))
 while (len(clips)-clipCutter) > 40:
     clipCutter = random.randint(clipCutter+5, clipCutter+10)
 if arguments['-v'] is True: print("ClipCutter™ will chop down {} rushes !".format(clipCutter))
@@ -115,28 +162,38 @@ if arguments['-z'] is False: print("Preparing clips...")
 for clip in clips:
     rushQueue.append(VideoFileClip(clip))
 
-# Set rushList as the final list of clips to be kept and the index j to 0
+# Set rushList as the final list of clips to be kept
 rushList = []
+
+# According to the user's selected method, generate an array with the timestamps for the cuts in sync with audio
+# NOTE: defaults to beat detection
+# TODO: This could be further improved with a "hybrid" mode which (semi randomly?) combines the results of beat and onset detection !
+if arguments['-o'] is True: cutsArray = onsetFinder(MUSIQUE)
+else: cutsArray = beatFinder(MUSIQUE)
+if arguments['-v'] is True: print("Found {} possible cuts in soundtrack, will use {}".format(len(cutsArray), len(rushQueue+1)))
+# Use findTitleCardLength() to find the length of the title card
+titleCardDuration, k = findTitleCardLength()
+# Make sure the cuts are not too fast using the arrayTrimmer™ function and passing the array to cut, the expected length, the offset (from the intro) and the minimum duration of a segment
+betterCutsArray= arrayTrimmer(cutsArray, len(rushQueue), k, 1.75)
+
+# Randomize the clips order (uncomment to make things more fun)
+if arguments['-v'] & arguments['-s'] is True: print("Randomizing clip order...")
+if arguments['-s'] is True: random.shuffle(rushQueue)
 
 # From rushQueue, keep a random part of each clip
 for i in range(len(rushQueue)):
     # Set the "max" var as an intenger of the clip's duration
-    max = int(rushQueue[i].duration)
-
-    if arguments['-v'] is True: print("Working on clip #{} with a length of {}".format(i, max))
+    dur = int(rushQueue[i].duration)
+    if arguments['-v'] is True: print("Working on clip #{} with a length of {}s".format(i, dur))
 
     # Check the clip's length. If shorter than 7 or longer than 60, discard that clip
-    if arguments['-d'] is False and (max < 7 or max > 60):
-            if arguments['-v'] is True: print(Fore.RED + "Clip #{} too short/long, skipping.".format(i))
-    elif arguments['-d'] is True and  max < 6:
-            if arguments['-v'] is True: print(Fore.RED + "Clip #{} too short, skipping.".format(i))
+    if arguments['-d'] is False and (dur < 7 or dur > 60):
+            if arguments['-v'] is True: print(Fore.RED + "Queue item #{} too short/long, skipping.".format(i))
+    elif arguments['-d'] is True and  dur < 6:
+            if arguments['-v'] is True: print(Fore.RED + "Queue item #{} too short, skipping.".format(i))
 
     # Call upon clipTrimmer™
-    clipTrimmer(max)
-
-# Randomize the clips order (uncomment to make things more fun)
-if arguments['-v'] & arguments['-s'] is True: print("Randomizing clip order...")
-if arguments['-s'] is True: random.shuffle(rushList)
+    clipTrimmer(dur, k)
 
 # Concatenate all the clips inside the rushList into impression array (will make it easier to change the soudtrack)
 impression = concatenate_videoclips(rushList)
@@ -144,11 +201,11 @@ impression = concatenate_videoclips(rushList)
 # Let's take care of that title card !
 if arguments['-z'] is False: print("Generating title card...")
 # Render the three parts (exercice, company and date) separately
-exerciceCard = TextClip(EXERCICE, size = (1920,1080), fontsize = 125, kerning=5, color = 'white').set_duration(3).set_position((0, -75))
-compagnieCard = TextClip(COMPAGNIE, size = (1920,1080), fontsize = 45, color = 'grey').set_duration(3).set_position((-500, 50))
-dateCard = TextClip(now.strftime('%d/%m/%Y'), size = (1920,1080), fontsize = 45, color = 'grey').set_duration(3).set_position((450, 50))
+exerciceCard = TextClip(EXERCICE, size = (1920,1080), fontsize = 125, kerning=5, color = 'white').set_duration(titleCardDuration).set_position((0, -75))
+compagnieCard = TextClip(COMPAGNIE, size = (1920,1080), fontsize = 45, color = 'grey').set_duration(titleCardDuration).set_position((-500, 50))
+dateCard = TextClip(now.strftime('%d/%m/%Y'), size = (1920,1080), fontsize = 45, color = 'grey').set_duration(titleCardDuration).set_position((450, 50))
 # Put them all together into titleCard as a single image (greatly speeds up rendering)
-titleCard = CompositeVideoClip([compagnieCard, exerciceCard, dateCard]).to_ImageClip(t='1').set_duration(3)
+titleCard = CompositeVideoClip([compagnieCard, exerciceCard, dateCard]).to_ImageClip(t='1').set_duration(titleCardDuration)
 # Put the tileCard and the impression together and concatenate them
 impressionPlayList = [titleCard, impression]
 impressionWithTitle = concatenate_videoclips(impressionPlayList)
@@ -161,7 +218,8 @@ impressionWithTitle = impressionWithTitle.volumex(0.1)
 music = AudioFileClip(MUSIQUE)
 music = music.set_duration(impressionWithTitle.duration)
 # Set the combination of both into soundTrack, add a fade-out at the end and set soundTrack as the impression's soundtrack
-soundTrack = CompositeAudioClip([impressionWithTitle.audio, music]).fx(afx.audio_fadeout, 3)
+# Make sure to skip impressionWithTitle.audio in case it has no audio track (ie: drone clips only..)
+soundTrack = CompositeAudioClip([impressionWithTitle.audio, music]).fx(afx.audio_fadeout, 3) if impressionWithTitle.audio is not None else music.fx(afx.audio_fadeout, 3)
 impressionWithTitle.audio = soundTrack
 
 # Now that we have all our clips, let's put the final piece together by adding the intro logo, the title card and the outro logo
@@ -171,12 +229,14 @@ videoTimeLine.append(VideoFileClip(LOGODEBUT))
 videoTimeLine.append(impressionWithTitle)
 videoTimeLine.append(VideoFileClip(LOGOFIN))
 
-
 # Concatenate all the clips inside the IMPRESSION array
 #print(rushList)
 impressionFinal = concatenate_videoclips(videoTimeLine)
 
 # Let's render that shit !
-if arguments['-z'] is False: print("Starting final rendering...")
-impressionFinal.to_videofile(OUTFILE)
-if arguments['-z'] is False: print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
+if arguments['-z'] is True: 
+    impressionFinal.to_videofile(OUTFILE, logger=None)
+else:
+    print("Starting final rendering...")
+    impressionFinal.to_videofile(OUTFILE)
+    print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
