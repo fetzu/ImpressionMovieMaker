@@ -15,7 +15,7 @@ Simply run ImpressionMovieMaker.py for a half-assed GUI experience.
 For those who like it old-school (and nicer), a CLI interface exists ("*python ImpressionMovieMaker.py --help*" is your friend).
 
 ```
-Usage: ImpressionMovieMaker.py [-dvzsph] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpbods] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
     RUSHESFOLDER      Path to folder containing the rushes.
@@ -28,9 +28,11 @@ Usage: ImpressionMovieMaker.py [-dvzsph] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [M
 
   Options:
     -h --help
-    -s                For hipsters: randomises the sequencing of the rushes.
-    -d                Drone mode: rushes longer than 1 minute are used. Warning: memory consuming and possibly unstable.
     -v                Verbose mode.
-    -z                "zen"/silent mode (almost nothing is logged to the terminal).
-    -p                DEV: Shows the arguments passed to the program.
+    -z                Zen/silent mode (almost nothing is logged to the terminal).
+    -p                DEV: Shows the arguments passed to the program and details of clipTrimmer™.
+    -b                BeatMode: cuts to the beat of the song [default mode].
+    -o                OnsetMode: cuts to the onsets of the song.
+    -d                Drone mode: rushes longer than 1 minute are used. Warning: memory consuming and possibly unstable.
+    -s                For hipsters: randomises the sequencing of the rushes.
 ```
