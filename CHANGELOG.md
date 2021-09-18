@@ -5,9 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+*nothing*
 
-## [0.2.0] - 2021.09.18
-**The music sync update !**: ImpressionMovieMakes is now smarter and syncs to the soundtrack !
+## [0.2.0] - 2021-09-18
+**The music sync update !** 
+ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 
 ### Added
 - onsetFinder™ and beatFinder™ using librosa to find onsets or beats (respectively) to sync the song and the cuts.
@@ -70,7 +72,7 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 
 ## [0.0.1] - 2021-08-11
 ### Added
-- Created *ImpressionMovieMaker.py* as  barebones python application (takes a rush folder, IN and OUT logo files (video) and music (audio) and makes a passable impression).
+- Created *ImpressionMovieMaker.py* as  bare-bones python application (takes a rush folder, IN and OUT logo files (video) and music (audio) and makes a passable impression).
 - Created *requirements.txt* for required python libraries (*pip install -r requirements.txt* is your friend.).
 
 [Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.2.0...HEAD
@@ -82,3 +84,4 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 [0.1.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.0.2...v0.1.0
 [0.0.2]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/fetzu/ImpressionMovieMaker/releases/tag/v0.0.1
+
