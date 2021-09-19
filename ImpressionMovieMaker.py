@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "1.0.0"
+VERSION = "1.0.2"
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
