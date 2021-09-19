@@ -2,7 +2,7 @@
 
 ## [ CLI is cooler with docopt ]
 """
-Usage: ImpressionMovieMaker.py [-hvzpbods] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <seconds>] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
     RUSHESFOLDER      Path to folder containing the rushes.
@@ -20,8 +20,13 @@ Usage: ImpressionMovieMaker.py [-hvzpbods] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] 
     -p                DEV: Shows the arguments passed to the program and details of clipTrimmer™.
     -b                BeatMode: cuts to the beat of the song [default mode].
     -o                OnsetMode: cuts to the onsets of the song.
+    -x                HybridMode: uses both beat tracking and onset detection.
     -d                Drone mode: rushes longer than 1 minute are used. Warning: memory consuming and possibly unstable.
-    -s                For hipsters: randomises the sequencing of the rushes.
+    -r                For hipsters: randomises the sequencing of the rushes.
+    -s --slow         Slow cut speeds (each clip will last at least somewhere between 3 and 5 seconds).
+    -m --medium       Medium cut speeds (each clip will last at least somewhere between 1.75 and 3.25 seconds) [default mode].
+    -f --fast         Fast cut speeds (each clip will last at least somewhere between 1 and 2 seconds).
+    --speed <sec>     Specify the minimum duration of a cut in seconds (overrides pre-set cut speeds).
 """
 
 
@@ -37,6 +42,7 @@ from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfilename
 from tkinter.simpledialog import askstring
 from docopt import docopt
 from colorama import init, Fore, Style
+from numpy.core import numeric
 
 
 ## [ Some INIT settings ]
@@ -56,7 +62,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "0.2.0"
+VERSION = "1.0.0"
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
@@ -84,6 +90,18 @@ else: COMPAGNIE = arguments['COMPAGNIE']
 
 if arguments['EXERCICE'] is None: EXERCICE = input("Nom de l'exercice? ")
 else: EXERCICE = arguments['EXERCICE']
+
+if arguments['--slow'] is True: CUTSPEED = random.uniform(3, 5)
+elif arguments['--medium'] is True: CUTSPEED = random.uniform(1.75, 3.25)
+elif arguments['--fast'] is True: CUTSPEED = random.uniform(1, 2)
+else: CUTSPEED = random.uniform(1.75, 3.25)
+
+if arguments['--speed'] is not None: 
+    if arguments['--speed'].isdigit():
+        CUTSPEED = arguments['--speed']
+        print("Custom speed detected, all clips will have a minimum duration of {} seconds". format(CUTSPEED))
+    else:
+        print(Fore.RED + "Argument {} for --speed is not valid, defaulting to --medium".format(arguments['--speed']))
 
 
 ## [ Some custom FUNCTIONS ]
@@ -167,18 +185,21 @@ rushList = []
 
 # According to the user's selected method, generate an array with the timestamps for the cuts in sync with audio
 # NOTE: defaults to beat detection
-# TODO: This could be further improved with a "hybrid" mode which (semi randomly?) combines the results of beat and onset detection !
 if arguments['-o'] is True: cutsArray = onsetFinder(MUSIQUE)
+elif arguments['-x']: 
+    beatsArray = beatFinder(MUSIQUE)
+    onsetArray = onsetFinder(MUSIQUE)
+    cutsArray = sorted(beatsArray + onsetArray)
 else: cutsArray = beatFinder(MUSIQUE)
 if arguments['-v'] is True: print("Found {} possible cuts in soundtrack, will use {}".format(len(cutsArray), len(rushQueue)+1))
 # Use findTitleCardLength() to find the length of the title card
 titleCardDuration, k = findTitleCardLength()
 # Make sure the cuts are not too fast using the arrayTrimmer™ function and passing the array to cut, the expected length, the offset (from the intro) and the minimum duration of a segment
-betterCutsArray= arrayTrimmer(cutsArray, len(rushQueue), k, 1.75)
+betterCutsArray= arrayTrimmer(cutsArray, len(rushQueue), k, CUTSPEED)
 
 # Randomize the clips order (uncomment to make things more fun)
-if arguments['-v'] & arguments['-s'] is True: print("Randomizing clip order...")
-if arguments['-s'] is True: random.shuffle(rushQueue)
+if arguments['-v'] & arguments['-r'] is True: print("Randomizing clip order...")
+if arguments['-r'] is True: random.shuffle(rushQueue)
 
 # From rushQueue, keep a random part of each clip
 for i in range(len(rushQueue)):

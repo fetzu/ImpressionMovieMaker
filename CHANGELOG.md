@@ -7,6 +7,18 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 ## [Unreleased]
 *nothing*
 
+## [1.0.0] - 2021-09-19
+**The "I think I'm done with this" release !** 
+
+### Added
+- Hybrid mode that combines both beatFinder™ and onsetFinder™.
+- Ability to toggle between three pre-set cutting speeds (--slow, --medium, --fast) which are generated a random at each start.
+- Ability to set a minimum cutting speed by the user (with --speed <seconds>)
+
+### Changed
+- Revamped CLI (docopt and README[_FR]) to reflect new changes.
+- **!Random sequence order argument has been changed from "-s" to "-r".**
+
 ## [0.2.1] - 2021-09-19
 **The stupid mistake hotfix !** 
 
@@ -81,7 +93,8 @@ ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 - Created *ImpressionMovieMaker.py* as  bare-bones python application (takes a rush folder, IN and OUT logo files (video) and music (audio) and makes a passable impression).
 - Created *requirements.txt* for required python libraries (*pip install -r requirements.txt* is your friend.).
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.1.3...v0.1.4
@@ -91,4 +104,3 @@ ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 [0.1.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.0.2...v0.1.0
 [0.0.2]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/fetzu/ImpressionMovieMaker/releases/tag/v0.0.1
-
