@@ -98,7 +98,7 @@ ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 - Created *requirements.txt* for required python libraries (*pip install -r requirements.txt* is your friend.).
 
 [Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.1...HEAD
-[1.0.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v1.0.0...v1.0.1
+[1.0.1]: https://github.com/fetzu/ImpressionMovieMaker/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.1.4...v0.2.0
