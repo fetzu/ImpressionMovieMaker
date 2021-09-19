@@ -104,4 +104,3 @@ ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 [0.1.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.0.2...v0.1.0
 [0.0.2]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/fetzu/ImpressionMovieMaker/releases/tag/v0.0.1
-

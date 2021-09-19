@@ -191,7 +191,7 @@ elif arguments['-x']:
     onsetArray = onsetFinder(MUSIQUE)
     cutsArray = sorted(beatsArray + onsetArray)
 else: cutsArray = beatFinder(MUSIQUE)
-if arguments['-v'] is True: print("Found {} possible cuts in soundtrack, will use {}".format(len(cutsArray), len(rushQueue+1)))
+if arguments['-v'] is True: print("Found {} possible cuts in soundtrack, will use {}".format(len(cutsArray), len(rushQueue)+1))
 # Use findTitleCardLength() to find the length of the title card
 titleCardDuration, k = findTitleCardLength()
 # Make sure the cuts are not too fast using the arrayTrimmer™ function and passing the array to cut, the expected length, the offset (from the intro) and the minimum duration of a segment
