@@ -39,10 +39,8 @@ import librosa
 from moviepy.editor import *
 from tkinter import Tk
 from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfilename
-from tkinter.simpledialog import askstring
 from docopt import docopt
 from colorama import init, Fore, Style
-from numpy.core import numeric
 
 
 ## [ Some INIT settings ]

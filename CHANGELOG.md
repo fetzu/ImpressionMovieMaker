@@ -7,6 +7,10 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 ## [Unreleased]
 *nothing*
 
+## [1.0.1] - 2021-09-19
+### Changed
+- Removed some unnecessary imports 
+
 ## [1.0.0] - 2021-09-19
 **The "I think I'm done with this" release !** 
 
@@ -93,7 +97,8 @@ ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 - Created *ImpressionMovieMaker.py* as  bare-bones python application (takes a rush folder, IN and OUT logo files (video) and music (audio) and makes a passable impression).
 - Created *requirements.txt* for required python libraries (*pip install -r requirements.txt* is your friend.).
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.1...HEAD
+[1.0.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.1.4...v0.2.0
