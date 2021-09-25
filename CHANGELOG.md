@@ -7,15 +7,22 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 ## [Unreleased]
 *nothing*
 
+## [2.1.0] - 2021-09-25
+**The troops have arrived !**
+
+### Added
+- It is now possible to set the type of troop (through the GUI or CLI with -t/--troupe).
+
+### Changed
+- Revamped CLI (docopt and README[_FR]) to reflect new changes.
+
 ## [2.0.0] - 2021-09-25
 **The GUI has landed !** 
 
 ### Added
 - There is now a GUI (can be called with GUI, is used by default if no arguments are passed).
 - Two assets (Taskbar/icon and a GUI graphic).
-
-### Changed
-- Added PySimpleGUI to the requirements.
+- PySimpleGUI added to *requirements.txt*.
 
 ## [1.0.1] - 2021-09-19
 ### Changed
@@ -107,7 +114,8 @@ ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 - Created *ImpressionMovieMaker.py* as  bare-bones python application (takes a rush folder, IN and OUT logo files (video) and music (audio) and makes a passable impression).
 - Created *requirements.txt* for required python libraries (*pip install -r requirements.txt* is your friend.).
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v1.0.1...v2.0.0
 [1.0.1]: https://github.com/fetzu/ImpressionMovieMaker/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/fetzu/ImpressionMovieMaker/compare/v0.2.1...v1.0.0

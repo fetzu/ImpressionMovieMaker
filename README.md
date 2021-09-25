@@ -15,7 +15,7 @@ Simply run ImpressionMovieMaker.py for a half-assed GUI experience.
 For those who like it old-school (and nicer), a CLI interface exists ("*python ImpressionMovieMaker.py --help*" is your friend).
 
 ```
-Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <seconds>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpboxdrtsmf] [--troupe=<type>] [--speed <seconds>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
     RUSHESFOLDER      Path to folder containing the rushes.
@@ -36,8 +36,10 @@ Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <seconds>] [--gui] [RUSH
     -x                HybridMode: uses both beat tracking and onset detection.
     -d                Drone mode: rushes longer than 1 minute are used. Warning: memory consuming and possibly unstable.
     -r                For hipsters: randomises the sequencing of the rushes.
+    -t --troupe <art>|<mec>|<inf>|<neutre>  
+                      Selects the kind of troop ("art", "mec", "inf" or "neutre").
     -s --slow         Slow cut speeds (each clip will last at least somewhere between 3 and 5 seconds).
-    -m --medium       Medium cut speeds (each clip will last at least somewhere between 1.75 and 3.25 seconds) [default mode].
+    -m --medium       Medium cut speeds (each clip will last at least somewhere between 1.75 and 3.25 seconds) [default].
     -f --fast         Fast cut speeds (each clip will last at least somewhere between 1 and 2 seconds).
     --speed <sec>     Specify the minimum duration of a cut in seconds (overrides pre-set cut speeds).
     --gui             If you'd rather use the GUI.
