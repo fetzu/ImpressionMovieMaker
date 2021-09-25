@@ -199,11 +199,11 @@ def GUI():
                     [gui.Text("Nom de l'exercice", size=(17, 1)),
                     gui.Input(key="EXERCICE", size=(33, 1))],
                     [gui.Text("Type de troupe", size=(17, 1)),
-                    gui.Radio("Artillerie", 2, False, size=(15, 1), key="ART"),
-                    gui.Radio("Mécanisée", 2, False, size=(15, 1), key="MEC")],
+                    gui.Radio("Artillerie", 2, False, size=(10, 1), text_color="red", key="ART"),
+                    gui.Radio("Mécanisée", 2, False, size=(10, 1), text_color="yellow", key="MEC")],
                     [gui.Text("", size=(17, 1)),
-                    gui.Radio("Infanterie", 2, False, size=(15, 1), key="INF"),
-                    gui.Radio("Neutre", 2, True, size=(15, 1), key="NEUTRE")]]
+                    gui.Radio("Infanterie", 2, False, size=(10, 1), text_color="green", key="INF"),
+                    gui.Radio("Neutre", 2, True, size=(10, 1), key="NEUTRE")]]
 
     frame_cutting = [[gui.Text("Vitesse du montage: ", size=(20, 1)), gui.Radio("Lente", 0, False, size=(7, 1), key="SLOW"), 
                     gui.Radio("Moyenne", 0, True, size=(7, 1), key="MEDIUM"), 

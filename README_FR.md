@@ -1,4 +1,5 @@
 # ImpressionMovieMaker
+<img src="/assets/logo.png" width=50% height=50%>
 
 ## Installation
 
