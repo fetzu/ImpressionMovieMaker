@@ -15,7 +15,7 @@ Simply run ImpressionMovieMaker.py for a half-assed GUI experience.
 For those who like it old-school (and nicer), a CLI interface exists ("*python ImpressionMovieMaker.py --help*" is your friend).
 
 ```
-Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <seconds>] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <seconds>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
     RUSHESFOLDER      Path to folder containing the rushes.
@@ -40,4 +40,5 @@ Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <seconds>] [RUSHESFOLDER
     -m --medium       Medium cut speeds (each clip will last at least somewhere between 1.75 and 3.25 seconds) [default mode].
     -f --fast         Fast cut speeds (each clip will last at least somewhere between 1 and 2 seconds).
     --speed <sec>     Specify the minimum duration of a cut in seconds (overrides pre-set cut speeds).
+    --gui             If you'd rather use the GUI.
 ```
