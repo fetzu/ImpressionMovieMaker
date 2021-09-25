@@ -37,7 +37,7 @@ Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--troupe=<type>] [--speed <secon
     -x                HybridMode: combine la détéction de rythme et des "onsets".
     -d                Mode drone: les clips de drones de plus de 1 minute sont pris en compte. Attention: possiblement instable.
     -r                Pour les hipster: ordre des séquences aléatoire.
-    -t --troupe <art>|<mec>|<inf>|<neutre>  
+    -t --troupe <art|mec|inf|neutre> 
                       Définit le type de troupe ("art", "mec", "inf" or "neutre").
     -s --slow         Vitesse de montage lente (chaque séquence dure au moins entre 3 et 5 secondes).
     -m --medium       Vitesse de montage moyenne (chaque séquence dure au moins entre 1.75 et 3.25 secondes) [défaut].
