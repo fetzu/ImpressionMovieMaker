@@ -15,7 +15,7 @@ Il est possible d'executer simplement ImpressionMovieMaker.py pour une utilisati
 Pour les plus avisés, une interface CLI existe ("*python ImpressionMovieMaker.py --help*" est votre ami).
 
 ```
-Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <secondes>]  [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <secondes>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
     RUSHESFOLDER      Dossier contenant les rushes.
@@ -40,4 +40,5 @@ Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--speed <secondes>]  [RUSHESFOLD
     -m --medium       Vitesse de montage moyenne (chaque séquence dure au moins entre 1.75 et 3.25 secondes) [par défaut].
     -f --fast         Vitesse de montage rapide (chaque séquence dure au moins entre 1 et 2 secondes).
     --speed <sec>     Specifier la durée minimale de chaque séquence (remplace les vitesses de montage pré-spécifiées).
+    --gui             Pour utiliser l'interface graphique.
 ```
