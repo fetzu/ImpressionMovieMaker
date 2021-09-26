@@ -16,7 +16,7 @@ Il est possible d'executer simplement ImpressionMovieMaker.py pour une utilisati
 Pour les plus avisés, une interface CLI existe ("*python ImpressionMovieMaker.py --help*" est votre ami).
 
 ```
-Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--troupe=<type>] [--speed <secondes>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpboxdrsmf] [--troupe=<type>] [--slow|--medium|--fast] [--speed <secondes>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
     RUSHESFOLDER      Dossier contenant les rushes.

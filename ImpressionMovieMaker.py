@@ -2,7 +2,7 @@
 
 ## [ CLI is cooler with docopt ]
 """
-Usage: ImpressionMovieMaker.py [-hvzpboxdrtsmf] [--troupe=<type>] [--speed <seconds>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
+Usage: ImpressionMovieMaker.py [-hvzpboxdrtsmf] [--troupe=<type>] [--slow|--medium|--fast] [--speed <seconds>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
 
   Arguments:
     RUSHESFOLDER      Path to folder containing the rushes.
@@ -34,7 +34,6 @@ Usage: ImpressionMovieMaker.py [-hvzpboxdrtsmf] [--troupe=<type>] [--speed <seco
 
 
 ## [ IMPORTS be imports ]
-from functools import reduce
 import os
 import sys
 import random
@@ -42,7 +41,15 @@ import datetime
 import warnings
 import librosa
 import PySimpleGUI as gui
-from moviepy.editor import *
+# NOTE: This fixes the build for windows by only importing the necessary modules from MoviePy
+#from moviepy.editor import * 
+from moviepy.video.VideoClip import TextClip
+from moviepy.video.io.VideoFileClip import VideoFileClip
+from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
+from moviepy.video.compositing.concatenate import concatenate_videoclips
+from moviepy.audio.io.AudioFileClip import AudioFileClip
+from moviepy.audio.AudioClip import CompositeAudioClip
+from moviepy.audio.fx import volumex as xfa, audio_fadeout as afx
 from docopt import docopt
 from colorama import init, Fore, Style
 from IMMAssets import LoadAssets
@@ -72,15 +79,16 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "2.1.1"
+VERSION = "2.1.2"
 USEGUI = False
+DISTROMODE = False
 
 # Uh-oh, we might need the paths to FFMPEG and Imagemagick in some envs
 #IMAGEMAGICK_BINARY = os.getenv('IMAGEMAGICK_BINARY', 'C:\\convert.exe')
-#os.environ['IMAGEIO_FFMPEG_EX'] = "C:\\ffmpeg.exe"
+#os.environ["IMAGEIO_FFMPEG_EXE"] = r"C:\ffmpeg.exe"
 
 # If the user started with the --gui argument, use the gui...
-if arguments['--gui'] is not None:
+if arguments['--gui'] is not False:
     USEGUI = True
 else:
     # If not, check if (all) arguments were passed through the CLI. If they were: set the constants, if they weren't: force the user to use the GUI !
@@ -184,11 +192,11 @@ def GUI():
     frame_files = [[gui.Text("Dossier de rushes", size=(20, 1)),
                     gui.InputText(key="RUSHESFOLDER"), gui.FolderBrowse("Choisir ")],
                     [gui.Text("Logo d'intro / de troupe", size=(20, 1)),
-                    gui.InputText(key="LOGODEBUT"), gui.FileBrowse("Choisir ")],
+                    gui.InputText(key="LOGODEBUT"), gui.FileBrowse("Choisir ", file_types = (('Video MP4', '*.mp4'),('TOUS','*.*')))],
                     [gui.Text("Logo de fin / AAR", size=(20, 1)),
-                    gui.InputText(key="LOGOFIN"), gui.FileBrowse("Choisir ")],
+                    gui.InputText(key="LOGOFIN"), gui.FileBrowse("Choisir ", file_types = (('Video MP4', '*.mp4'),('TOUS','*.*')))],
                     [gui.Text("Musique", size=(20, 1)),
-                    gui.InputText(key="MUSIQUE"), gui.FileBrowse("Choisir ")]]
+                    gui.InputText(key="MUSIQUE"), gui.FileBrowse("Choisir ", file_types = (('Fichier MP3', '*.mp3'),('Fichier WAV', '*.wav'),('Fichier FLAC', '*.flac'),('TOUS','*.*')))]]
 
     frame_infos = [[gui.Text("Date de l'exercice", size=(17, 1)), 
                     gui.Input(NOW.strftime('%d/%m/%Y'), key="CUSTOMDATE", size=(25, 1)), 
@@ -227,7 +235,7 @@ def GUI():
                 [gui.Text("", size=(0, 1))],
                 [gui.Text("Sauver l'impression sous...", size=(20, 1)),
                 gui.InputText(key="OUTFILE", size=(106, 1)), 
-                gui.FileSaveAs("Choisir ")],
+                gui.FileSaveAs("Choisir ", file_types = (('MP4', '*.mp4'),))],
                 [gui.Text("", size=(0, 1))],
                 [gui.Multiline(autoscroll=True, enter_submits=False, background_color="black", text_color="white", auto_refresh=True, reroute_stdout=True, reroute_stderr=False, no_scrollbar=True, size=(100, 9), font='Courier 10'),
                 gui.Submit("Go", button_color="green", font="bold", size=(15, 5))]]
@@ -341,7 +349,7 @@ impressionWithTitle = concatenate_videoclips(impressionPlayList)
 # Let's take care of that soundtrack !
 if arguments['-z'] is False: print("Compositing the audio...")
 # Reduce the overall volume to 10%
-impressionWithTitle = impressionWithTitle.volumex(0.1)
+impressionWithTitle = impressionWithTitle.fx(xfa.volumex, 0.1)
 # Load the selected music into an AudioFileClip, and set its duration to the impression's duration
 music = AudioFileClip(MUSIQUE)
 music = music.set_duration(impressionWithTitle.duration)
@@ -364,6 +372,11 @@ impressionFinal = concatenate_videoclips(videoTimeLine)
 # Let's render that shit !
 if arguments['-z'] is True: 
     impressionFinal.to_videofile(OUTFILE, logger=None)
+elif DISTROMODE is True: # This is done because the logger crashes the distributed software
+    print("Starting final rendering...")
+    impressionFinal.to_videofile(OUTFILE, logger=None)
+    if USEGUI is True: print("Done ! See the results at {}".format(OUTFILE))
+    else: print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
 else:
     print("Starting final rendering...")
     impressionFinal.to_videofile(OUTFILE)
@@ -371,7 +384,7 @@ else:
     else: print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
 
 # Show a popup with success message
-gui.popup_auto_close("Terminé ! Le résultat se trouve ici: {}".format(OUTFILE), title="Terminé !", auto_close_duration=10)
+if USEGUI is True: gui.popup_auto_close("Terminé ! Le résultat se trouve ici: {}".format(OUTFILE), title="Terminé !", auto_close_duration=10)
 
 # Show the result (using the OS's default video file player)
 os.startfile(OUTFILE)
