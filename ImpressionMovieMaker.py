@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "2.1.2"
+VERSION = "2.1.3"
 USEGUI = False
 DISTROMODE = False
 
@@ -119,9 +119,9 @@ else:
     elif arguments['--fast'] is True: CUTSPEED = random.uniform(1, 2)
     else: CUTSPEED = random.uniform(1.75, 3.25)
 
-    if arguments['--troupe'] == "art": TROOPCOLOR = "red"
-    elif arguments['--troupe'] == "mec": TROOPCOLOR = "yellow"
-    elif arguments['--troupe'] == "inf": TROOPCOLOR = "green"
+    if "art" in arguments['--troupe']: TROOPCOLOR = "red"
+    elif"mec" in arguments['--troupe']: TROOPCOLOR = "yellow"
+    elif "inf" in arguments['--troupe']: TROOPCOLOR = "green"
     else: TROOPCOLOR = "grey"
 
     if arguments['--speed'] is not None: 
@@ -323,9 +323,13 @@ for i in range(len(rushQueue)):
 
     # Check the clip's length. If shorter than 7 or longer than 60, discard that clip
     if arguments['-d'] is False and (dur < 7 or dur > 60):
-            if arguments['-v'] is True: print(Fore.RED + "Queue item #{} too short/long, skipping.".format(i))
+            if arguments['-v'] is True: 
+                print(Fore.RED + "Queue item #{} too short/long, skipping.".format(i))
+                continue
     elif arguments['-d'] is True and  dur < 6:
-            if arguments['-v'] is True: print(Fore.RED + "Queue item #{} too short, skipping.".format(i))
+            if arguments['-v'] is True: 
+                print(Fore.RED + "Queue item #{} too short, skipping.".format(i))
+                continue
 
     # Call upon clipTrimmer™
     clipTrimmer(dur, k)
