@@ -134,7 +134,7 @@ ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 - Created *ImpressionMovieMaker.py* as  bare-bones python application (takes a rush folder, IN and OUT logo files (video) and music (audio) and makes a passable impression).
 - Created *requirements.txt* for required python libraries (*pip install -r requirements.txt* is your friend.).
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v2.1.3...HEAD
+[Unreleased]: https://github.com/fetzu/ImpressionMovieMaker/compare/v2.1.3...HEAD
 [2.1.3]: https://github.com/fetzu/ImpressionMovieMaker/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/fetzu/ImpressionMovieMaker/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/fetzu/ImpressionMovieMaker/compare/v2.1.0...v2.1.1
