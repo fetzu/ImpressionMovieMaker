@@ -23,7 +23,7 @@ Usage: ImpressionMovieMaker.py [-hvzpboxdrtsmf] [--troupe=<type>] [--slow|--medi
     -x                HybridMode: uses both beat tracking and onset detection.
     -d                Drone mode: rushes longer than 1 minute are used. Warning: memory consuming and possibly unstable.
     -r                For hipsters: randomises the sequencing of the rushes.
-    -t --troupe <art|mec|inf|neutre>  
+    -t --troupe <art|mec|inf|neutre>
                       Selects the kind of troop ("art", "mec", "inf" or "neutre").
     -s --slow         Slow cut speeds (each clip will last at least somewhere between 3 and 5 seconds).
     -m --medium       Medium cut speeds (each clip will last at least somewhere between 1.75 and 3.25 seconds) [default].
@@ -42,7 +42,7 @@ import warnings
 import librosa
 import PySimpleGUI as gui
 # NOTE: This fixes the build for windows by only importing the necessary modules from MoviePy
-#from moviepy.editor import * 
+#from moviepy.editor import *
 from moviepy.video.VideoClip import TextClip
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
@@ -69,8 +69,8 @@ NOW = datetime.datetime.now()
 if sys.platform.startswith('win'):
     import ctypes
     # Make sure Pyinstaller icons are still grouped
-    if sys.argv[0].endswith('.exe') == False:
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(u'BonoProd.ImpressionMovieMaker.GUImpressionMovieMaker.2')
+    if sys.argv[0].endswith('.exe') is False:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('BonoProd.ImpressionMovieMaker.GUImpressionMovieMaker.2')
 
 # Needed to intitialize docopt (for CLI)
 if __name__ == '__main__':
@@ -124,69 +124,93 @@ else:
     elif "inf" in arguments['--troupe']: TROOPCOLOR = "green"
     else: TROOPCOLOR = "grey"
 
-    if arguments['--speed'] is not None: 
+    if arguments['--speed'] is not None:
         if arguments['--speed'].isdigit():
             CUTSPEED = arguments['--speed']
-            print("Custom speed detected, all clips will have a minimum duration of {} seconds". format(CUTSPEED))
+            print(f"Custom speed detected, all clips will have a minimum duration of {CUTSPEED} seconds")
         else:
-            print(Fore.RED + "Argument {} for --speed is not valid, defaulting to --medium".format(arguments['--speed']))
+            print(Fore.RED + f"Argument {arguments['--speed']} for --speed is not valid, defaulting to --medium")
 
 
 ## [ Some custom FUNCTIONS ]
-# clipTrimmer™ is a function to cut the clips in sync using our betterCutsArray 
-def clipTrimmer(dur, k):
-    cb = random.randint(1, int(dur/5))
-    ce = cb + (betterCutsArray[i+1] - betterCutsArray[i])
-    rushQueue[i] = rushQueue[i].subclip(cb, ce)
-    if arguments['-p'] is True: print(Style.DIM + "Clip #{}: duration {}s | Cut from {}s to {}s".format(i, dur, cb, ce))
-    if arguments['-p'] is True: print(Style.DIM +  "Clip #{} done with a new duration of {}s".format(i, rushQueue[i].duration))
+def clipTrimmer(clipsArray, toCutArray, maxduration):
+    """
+    clipTrimmer™ is a function to cut the clips in sync using our betterCutsArray.
+    It takes an array of clip objects, an array of cuts and maximum duration (maxdur)
+    and proceeds to cut down every clip's duration under the defined duration.
+    """
+    cb = random.randint(1, int(maxduration/5))
+    ce = cb + (toCutArray[i+1] - toCutArray[i])
+    clipsArray[i] = clipsArray[i].subclip(cb, ce)
+    if arguments['-p'] is True: print(Style.DIM + f"Clip #{i}: duration {maxduration}s | Cut from {cb}s to {ce}s")
+    if arguments['-p'] is True: print(Style.DIM + f"Clip #{i} done with a new duration of {clipsArray[i].duration}s")
     # Append the result to rushList
-    rushList.append(rushQueue[i])
-    if arguments['-v'] is True: print(Fore.GREEN + "Clip #{} appended !".format(i))
+    rushList.append(clipsArray[i])
+    if arguments['-v'] is True: print(Fore.GREEN + f"Clip #{i} appended !")
 
-# arrayTrimmer™ is a function that looks at an array and makes sure the cuts are not too fast and returns the new (slower) cuts to a new array
-def arrayTrimmer(cutsArray, nseq, offset, min):
+def arrayTrimmer(toCutArray, nseq, offset, minduration):
+    """
+    arrayTrimmer™ is a function that looks at an array and makes sure the cuts
+    are not too fast and returns the new (slower) cuts to a new array.
+    It takes and array to cut, the expected length in seconds,
+    the offset (from the intro/first cut) and the minimum duration of a segment.
+    """
     m = 0
     betterCutsArray = []
-    betterCutsArray.append(cutsArray[offset])
+    betterCutsArray.append(toCutArray[offset])
     while m < nseq:
         l = 1
-        while cutsArray[offset+l] - cutsArray[offset] < min:
+        while cutsArray[offset+l] - toCutArray[offset] < minduration:
             l = l + 1
-        betterCutsArray.append(cutsArray[offset+l])
+        betterCutsArray.append(toCutArray[offset+l])
         offset = offset + l
         m = m + 1
-    if arguments['-v'] is True: print(Fore.GREEN + "Array has been reduced to {} cuts with a minimum duration of {}s".format(len(betterCutsArray), min))
+    if arguments['-v'] is True: print(Fore.GREEN + f"Array has been reduced to {len(betterCutsArray)} cuts with a minimum duration of {minduration}s")
     return betterCutsArray
 
-# onsetFinder™ is a function that leverages librosa to find the onsets in the selected song and returns an array of the timestamps
-def onsetFinder(MUSIQUE):
+def onsetFinder(MUSIC):
+    """
+    onsetFinder™ is a function that leverages librosa to find the onsets
+    in the selected song and returns an array of the timestamps.
+    It takes a clip object as input and returns an array with onset timestamps.
+    """
     if arguments['-v'] is True: print("Detecting cuts using onsetFinder™...")
-    x, sr = librosa.load(MUSIQUE)
+    x, sr = librosa.load(MUSIC)
     onset_frames = librosa.onset.onset_detect(x, sr=sr, units='frames')
     onset_times = list(librosa.frames_to_time(onset_frames, sr=sr))
     return onset_times
 
-# beatFinder™ is a function that leverages librosa to find the beats in the selected song and returns an array of the timestamps
-def beatFinder(MUSIQUE):
+def beatFinder(MUSIC):
+    """
+    beatFinder™ is a function that leverages librosa to find the beats/tempo
+    in the selected song and returns an array of the timestamps.
+    It takes a clip object as input and returns an array with onset timestamps.
+    """
     if arguments['-v'] is True: print("Detecting cuts using beatFinder™...")
-    x, sr = librosa.load(MUSIQUE)
+    x, sr = librosa.load(MUSIC)
     beat, beats = librosa.beat.beat_track(x, sr=sr, units='frames')
+    if arguments['-v'] is True: print(f"beatFinder™ detected a beat of {beat} beats-per-second...")
     beat_times = list(librosa.frames_to_time(beats, sr=sr))
     return beat_times
 
 # findTitleCardLength™ is a function to sync the title card's length to the music (while keeping it longer than 2 seconds)
-def findTitleCardLength():
+def findTitleCardLength(myCutsArray):
+    """
+    findTitleCardLength™ is a function to sync the title card's length to the music
+    (while keeping it longer than 2 seconds).
+    """
     k = 1
-    while cutsArray[k] < 2:
+    while myCutsArray[k] < 2:
         k = k + 1
-    titleCardDuration = cutsArray[k]
-    if arguments['-v'] is True: print("Title card duration will be {}s".format(titleCardDuration))
-    return titleCardDuration, k
+    cardDuration = myCutsArray[k]
+    if arguments['-v'] is True: print(f"Title card duration will be {cardDuration}s")
+    return cardDuration, k
 
 ## [ The GUI lies here ]
 def GUI():
-    # Define the GUI layout
+    """
+    Defines the GUI layout
+    """
     gui.theme('Black') #"Default1" is gray (and a little sadder)
 
     frame_files = [[gui.Text("Dossier de rushes", size=(20, 1)),
@@ -198,8 +222,8 @@ def GUI():
                     [gui.Text("Musique", size=(20, 1)),
                     gui.InputText(key="MUSIQUE"), gui.FileBrowse("Choisir ", file_types = (('Fichier MP3', '*.mp3'),('Fichier WAV', '*.wav'),('Fichier FLAC', '*.flac'),('TOUS','*.*')))]]
 
-    frame_infos = [[gui.Text("Date de l'exercice", size=(17, 1)), 
-                    gui.Input(NOW.strftime('%d/%m/%Y'), key="CUSTOMDATE", size=(25, 1)), 
+    frame_infos = [[gui.Text("Date de l'exercice", size=(17, 1)),
+                    gui.Input(NOW.strftime('%d/%m/%Y'), key="CUSTOMDATE", size=(25, 1)),
                     gui.CalendarButton('Choisir', target="CUSTOMDATE", format="%d/%m/%Y")],
                     [gui.Text("Compagnie", size=(17, 1)),
                     gui.Input(key="COMPAGNIE", size=(33, 1))],
@@ -212,14 +236,13 @@ def GUI():
                     gui.Radio("Infanterie", 2, False, size=(10, 1), text_color="green", key="INF"),
                     gui.Radio("Neutre", 2, True, size=(10, 1), key="NEUTRE")]]
 
-    frame_cutting = [[gui.Text("Vitesse du montage: ", size=(20, 1)), gui.Radio("Lente", 0, False, size=(7, 1), key="SLOW"), 
-                    gui.Radio("Moyenne", 0, True, size=(7, 1), key="MEDIUM"), 
+    frame_cutting = [[gui.Text("Vitesse du montage: ", size=(20, 1)), gui.Radio("Lente", 0, False, size=(7, 1), key="SLOW"),
+                    gui.Radio("Moyenne", 0, True, size=(7, 1), key="MEDIUM"),
                     gui.Radio("Rapide", 0, False, size=(7, 1), key="FAST")],
-                    [gui.Text("Détection des coupes: ", size=(20, 1)), gui.Radio("Détection du rythme", 1, True, size=(14, 1), key="BEATMODE"), 
-                    gui.Radio("Détection des variations", 1, False, size=(17, 1), key="ONSETMODE"), 
+                    [gui.Text("Détection des coupes: ", size=(20, 1)), gui.Radio("Détection du rythme", 1, True, size=(14, 1), key="BEATMODE"),
+                    gui.Radio("Détection des variations", 1, False, size=(17, 1), key="ONSETMODE"),
                     gui.Radio("Mixte", 1, False, size=(4, 1), key="HYBRIDMODE")]]
-    
-    frame_extra = [[gui.Checkbox("Utiliser plans drones / de plus de 60 secondes", key="DRONEMODE", size=(45, 1))], 
+    frame_extra = [[gui.Checkbox("Utiliser plans drones / de plus de 60 secondes", key="DRONEMODE", size=(45, 1))],
                     [gui.Checkbox("Ordre des rushes aléatoire", key="SHUFFLEMODE", size=(45, 1))]]
 
     bloc1 = [gui.Frame('Fichiers source', frame_files, vertical_alignment="top"), gui.Frame('Données pour le titrage', frame_infos, vertical_alignment="top")]
@@ -234,18 +257,18 @@ def GUI():
                 [bloc2],
                 [gui.Text("", size=(0, 1))],
                 [gui.Text("Sauver l'impression sous...", size=(20, 1)),
-                gui.InputText(key="OUTFILE", size=(106, 1)), 
+                gui.InputText(key="OUTFILE", size=(106, 1)),
                 gui.FileSaveAs("Choisir ", file_types = (('MP4', '*.mp4'),))],
                 [gui.Text("", size=(0, 1))],
                 [gui.Multiline(autoscroll=True, enter_submits=False, background_color="black", text_color="white", auto_refresh=True, reroute_stdout=True, reroute_stderr=False, no_scrollbar=True, size=(100, 9), font='Courier 10'),
                 gui.Submit("Go", button_color="green", font="bold", size=(15, 5))]]
 
     # Create the window
-    window = gui.Window('ImpressionMovieMaker v{}'.format(VERSION), layout, icon=IMMICON)
+    window = gui.Window(f'ImpressionMovieMaker v{VERSION}', layout, icon=IMMICON)
     event, guivalues = window.read()
     return event, guivalues
 
-# If USEGUI is true.. bring the GUI to life 
+# If USEGUI is true.. bring the GUI to life
 if USEGUI is True:
     IMMICON, IMMLOGO = LoadAssets()
     button, guivalues = GUI()
@@ -270,21 +293,21 @@ if USEGUI is True:
 
 ## [ MAIN App logic ]
 # I'm leaving my mark, just because I can
-if arguments['-z'] is False and USEGUI is False: 
+if arguments['-z'] is False and USEGUI is False:
     print(Fore.YELLOW + Style.BRIGHT + "'Yeah, but your scientists were so preoccupied with whether or not they could, they didn't stop to think if they should.' -Dr. Ian Malcolm, Jurassic Park")
-if arguments['-z'] is False: 
-    if USEGUI is True: print("ImpressionMovieMaker version {} by Julien 'bonj' Bono.".format(VERSION))
-    else: print(Fore.YELLOW + Style.BRIGHT + "ImpressionMovieMaker version {} by Julien 'bonj' Bono.".format(VERSION))
+if arguments['-z'] is False:
+    if USEGUI is True: print(f"ImpressionMovieMaker version {VERSION} by Julien 'bonj' Bono.")
+    else: print(Fore.YELLOW + Style.BRIGHT + f"ImpressionMovieMaker version {VERSION} by Julien 'bonj' Bono.")
 
 # List all the videos inside the FOLDER (and its subfolders) and push the paths into the clips array
 clips = [os.path.join(r,file) for r,d,f in os.walk(RUSHESFOLDER) for file in f]
-if arguments['-v'] is True: print("Number of rushes provided: {}".format(len(clips)))
+if arguments['-v'] is True: print(f"Number of rushes provided: {len(clips)}")
 
 # From clips, select a random number of files to remove from list. Make sure that the total number of rushes does not exceed 40.
 clipCutter = random.randint(int(len(clips)/8), int(len(clips)/5))
 while (len(clips)-clipCutter) > 40:
     clipCutter = random.randint(clipCutter+5, clipCutter+10)
-if arguments['-v'] is True: print("ClipCutter™ will chop down {} rushes !".format(clipCutter))
+if arguments['-v'] is True: print(f"ClipCutter™ will chop down {clipCutter} rushes !")
 for i in range(clipCutter):
     clips.pop(random.randint(0, len(clips)-1))
 
@@ -300,16 +323,16 @@ rushList = []
 # According to the user's selected method, generate an array with the timestamps for the cuts in sync with audio
 # NOTE: defaults to beat detection
 if arguments['-o'] is True: cutsArray = onsetFinder(MUSIQUE)
-elif arguments['-x']: 
+elif arguments['-x']:
     beatsArray = beatFinder(MUSIQUE)
     onsetArray = onsetFinder(MUSIQUE)
     cutsArray = sorted(beatsArray + onsetArray)
 else: cutsArray = beatFinder(MUSIQUE)
-if arguments['-v'] is True: print("Found {} possible cuts in soundtrack, will use {}".format(len(cutsArray), len(rushQueue)+1))
+if arguments['-v'] is True: print(f"Found {len(cutsArray)} possible cuts in soundtrack, will use {len(rushQueue)+1}")
 # Use findTitleCardLength() to find the length of the title card
-titleCardDuration, k = findTitleCardLength()
+titleCardDuration, titleCardOffset = findTitleCardLength(cutsArray)
 # Make sure the cuts are not too fast using the arrayTrimmer™ function and passing the array to cut, the expected length, the offset (from the intro) and the minimum duration of a segment
-betterCutsArray= arrayTrimmer(cutsArray, len(rushQueue), k, CUTSPEED)
+finalCutsArray= arrayTrimmer(cutsArray, len(rushQueue), titleCardOffset, CUTSPEED)
 
 # Randomize the clips order (uncomment to make things more fun)
 if arguments['-v'] & arguments['-r'] is True: print("Randomizing clip order...")
@@ -319,20 +342,20 @@ if arguments['-r'] is True: random.shuffle(rushQueue)
 for i in range(len(rushQueue)):
     # Set the "max" var as an intenger of the clip's duration
     dur = int(rushQueue[i].duration)
-    if arguments['-v'] is True: print("Working on clip #{} with a length of {}s".format(i, dur))
+    if arguments['-v'] is True: print(f"Working on clip #{i} with a length of {dur}s")
 
     # Check the clip's length. If shorter than 7 or longer than 60, discard that clip
     if arguments['-d'] is False and (dur < 7 or dur > 60):
-            if arguments['-v'] is True: 
-                print(Fore.RED + "Queue item #{} too short/long, skipping.".format(i))
-                continue
+        if arguments['-v'] is True:
+            print(Fore.RED + f"Queue item #{i} too short/long, skipping.")
+            continue
     elif arguments['-d'] is True and  dur < 6:
-            if arguments['-v'] is True: 
-                print(Fore.RED + "Queue item #{} too short, skipping.".format(i))
-                continue
+        if arguments['-v'] is True:
+            print(Fore.RED + f"Queue item #{i} too short, skipping.")
+            continue
 
     # Call upon clipTrimmer™
-    clipTrimmer(dur, k)
+    clipTrimmer(rushQueue, finalCutsArray, dur)
 
 # Concatenate all the clips inside the rushList into impression array (will make it easier to change the soudtrack)
 impression = concatenate_videoclips(rushList)
@@ -374,21 +397,21 @@ videoTimeLine.append(VideoFileClip(LOGOFIN))
 impressionFinal = concatenate_videoclips(videoTimeLine)
 
 # Let's render that shit !
-if arguments['-z'] is True: 
+if arguments['-z'] is True:
     impressionFinal.to_videofile(OUTFILE, logger=None)
 elif DISTROMODE is True: # This is done because the logger crashes the distributed software
     print("Starting final rendering...")
     impressionFinal.to_videofile(OUTFILE, logger=None)
-    if USEGUI is True: print("Done ! See the results at {}".format(OUTFILE))
-    else: print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
+    if USEGUI is True: print(f"Done ! See the results at {OUTFILE}")
+    else: print(Fore.GREEN + Style.BRIGHT + f"Done ! See the results at {OUTFILE}")
 else:
     print("Starting final rendering...")
     impressionFinal.to_videofile(OUTFILE)
-    if USEGUI is True: print("Done ! See the results at {}".format(OUTFILE))
-    else: print(Fore.GREEN + Style.BRIGHT + "Done ! See the results at {}".format(OUTFILE))
+    if USEGUI is True: print(f"Done ! See the results at {OUTFILE}")
+    else: print(Fore.GREEN + Style.BRIGHT + f"Done ! See the results at {OUTFILE}")
 
 # Show a popup with success message
-if USEGUI is True: gui.popup_auto_close("Terminé ! Le résultat se trouve ici: {}".format(OUTFILE), title="Terminé !", auto_close_duration=10)
+if USEGUI is True: gui.popup_auto_close(f"Terminé ! Le résultat se trouve ici: {OUTFILE}", title="Terminé !", auto_close_duration=10)
 
 # Show the result (using the OS's default video file player)
 os.startfile(OUTFILE)
