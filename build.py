@@ -1,5 +1,6 @@
 import sys
 from cx_Freeze import setup, Executable
+from ImpressionMovieMaker import VERSION
 
 # Dependencies are automatically detected, but it might need fine tuning.
 # "packages": ["os"] is used as example only
@@ -12,8 +13,8 @@ if sys.platform == "win32":
 
 setup(
     name = "ImpressionMovieMaker",
-    version = "2.1.2",
-    description = "ImpressionMovieMaker v2.1.2 !",
+    version = VERSION,
+    description = f"ImpressionMovieMaker v{VERSION} !",
     options = {"build_exe": build_exe_options},
     executables = [Executable("ImpressionMovieMaker.py", base=base, icon="assets/icon_alt.ico")]
 )
