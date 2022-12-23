@@ -61,46 +61,47 @@ jobs:
             #build/*.app/**/*
             
   publish:
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          include:
-            - os: "Linux Build"
-              artifact_name: ImpressionMovieMaker.bin
-              ext: ".bin"
-              asset_name: ImpressionMovieMaker-linux-amd64
-            - os: "Windows Build"
-              artifact_name: ImpressionMovieMaker.exe
-              ext: ".exe"
-              asset_name: ImpressionMovieMaker-windows-amd64
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: "Linux Build"
+            artifact_name: ImpressionMovieMaker.bin
+            ext: ".bin"
+            asset_name: ImpressionMovieMaker-linux-amd64
+          - os: "Windows Build"
+            artifact_name: ImpressionMovieMaker.exe
+            ext: ".exe"
+            asset_name: ImpressionMovieMaker-windows-amd64
 
-      steps:
-      - uses: actions/checkout@v3
+    steps:
+    - uses: actions/checkout@v3
 
-      - name: Read CHANGELOG
-        id: read_release
-        shell: bash
-        run: |
-          r=$(cat CHANGELOG.md)                       
-          r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
-          r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
-          r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
-          echo "::set-output name=RELEASE_BODY::$r"         # <--- Set environment variable
+    - name: Read CHANGELOG
+      id: read_release
+      shell: bash
+      run: |
+        r=$(cat CHANGELOG.md)                       
+        r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
+        r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
+        r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
+        echo "::set-output name=RELEASE_BODY::$r"         # <--- Set environment variable
 
-      - name: Download artifacts from build
-        uses: bettermarks/action-artifact-download@0.4.0
-        with:
-          repo: marmotteproductions/ImpressionMovieMaker-test
-          token: ${{ secrets.GITHUB_TOKEN }}
-          artifact_name: ${{ matrix.os }}
-          rename: ${{ matrix.artifact_name }}
+    - name: Download artifacts from build
+      uses: bettermarks/action-artifact-download@0.4.0
+      with:
+        repo: fetzu/ImpressionMovieMaker
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifact_name: ${{ matrix.os }}
+        rename: ${{ matrix.artifact_name }}
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.artifact_name }}
-          asset_name: ImpressionMovieMaker_$tag.${{ matrix.ext }}
-          tag: ${{ github.ref }}
-          body: |
-              ${{ steps.read_release.outputs.RELEASE_BODY }}
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.artifact_name }}
+        asset_name: ImpressionMovieMaker_$tag.${{ matrix.ext }}
+        tag: ${{ github.ref }}
+        body: |
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
