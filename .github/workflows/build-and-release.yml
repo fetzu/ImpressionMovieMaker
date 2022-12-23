@@ -1,0 +1,106 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest] #NOTE: macOS is broken due to a libomp failure.
+      
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      # Check-out repository
+      - uses: actions/checkout@v3
+
+      - name: OS specific run
+        uses: KnicKnic/os-specific-run@v1.0.4
+        with:
+          linux: sudo apt-get -y install libfuse2
+          #macos: brew install libomp 
+        
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+          cache: 'pip'
+          cache-dependency-path: |
+            **/requirements*.txt
+      # Install dependencies
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+      # Build python script into a stand-alone exe
+      - uses: Nuitka/Nuitka-Action@main
+        with:
+          script-name: ImpressionMovieMaker.py
+          standalone: true
+          onefile: true
+          enable-plugins: numpy
+          # access-token: ${{ secrets.NUITKA_COMMERCIAL_ACCESS_TOKEN }}
+          # macos-create-app-bundle: ${{ runner.os == 'macOS' }}
+          
+      # Uploads artifacts
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ runner.os }} Build
+          path: |
+            build/*.exe
+            build/*.bin
+            #build/*.app/**/*
+            
+  publish:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          include:
+            - os: "Linux Build"
+              artifact_name: ImpressionMovieMaker.bin
+              ext: ".bin"
+              asset_name: ImpressionMovieMaker-linux-amd64
+            - os: "Windows Build"
+              artifact_name: ImpressionMovieMaker.exe
+              ext: ".exe"
+              asset_name: ImpressionMovieMaker-windows-amd64
+
+      steps:
+      - uses: actions/checkout@v3
+
+      - name: Read CHANGELOG
+        id: read_release
+        shell: bash
+        run: |
+          r=$(cat CHANGELOG.md)                       
+          r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
+          r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
+          r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
+          echo "::set-output name=RELEASE_BODY::$r"         # <--- Set environment variable
+
+      - name: Download artifacts from build
+        uses: bettermarks/action-artifact-download@0.4.0
+        with:
+          repo: marmotteproductions/ImpressionMovieMaker-test
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: ${{ matrix.os }}
+          rename: ${{ matrix.artifact_name }}
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ImpressionMovieMaker_$tag.${{ matrix.ext }}
+          tag: ${{ github.ref }}
+          body: |
+              ${{ steps.read_release.outputs.RELEASE_BODY }}
