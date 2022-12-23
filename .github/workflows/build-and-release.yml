@@ -66,11 +66,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: "Linux Build"
+          - os: Linux
+            build: Linux Build
             artifact_name: ImpressionMovieMaker.bin
             ext: ".bin"
             asset_name: ImpressionMovieMaker-linux-amd64
-          - os: "Windows Build"
+          - os: Windows
+            build: Windows Build
             artifact_name: ImpressionMovieMaker.exe
             ext: ".exe"
             asset_name: ImpressionMovieMaker-windows-amd64
@@ -93,7 +95,7 @@ jobs:
       with:
         repo: fetzu/ImpressionMovieMaker
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifact_name: ${{ matrix.os }}
+        artifact_name: ${{ matrix.build }}
         rename: ${{ matrix.artifact_name }}
 
     - name: Upload binaries to release
