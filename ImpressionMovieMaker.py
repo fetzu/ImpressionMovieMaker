@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
 
 ## [ CONSTANTS are the new vars ]
-VERSION = "2.1.3"
+VERSION = "2.1.4"
 USEGUI = False
 DISTROMODE = False
 
