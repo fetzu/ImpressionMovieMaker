@@ -20,7 +20,7 @@ jobs:
     
     steps:
       # Check-out repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: OS specific run
         uses: KnicKnic/os-specific-run@v1.0.4
@@ -46,7 +46,7 @@ jobs:
           script-name: ImpressionMovieMaker.py
           standalone: true
           onefile: true
-          enable-plugins: numpy
+          enable-plugins: anti-bloat
           # access-token: ${{ secrets.NUITKA_COMMERCIAL_ACCESS_TOKEN }}
           # macos-create-app-bundle: ${{ runner.os == 'macOS' }}
           
@@ -78,7 +78,7 @@ jobs:
             asset_name: ImpressionMovieMaker-windows-amd64
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Read CHANGELOG
       id: read_release
@@ -91,7 +91,7 @@ jobs:
         echo "::set-output name=RELEASE_BODY::$r"         # <--- Set environment variable
 
     - name: Download artifacts from build
-      uses: bettermarks/action-artifact-download@0.4.0
+      uses: bettermarks/action-artifact-download@0.5.1
       with:
         repo: fetzu/ImpressionMovieMaker
         token: ${{ secrets.GITHUB_TOKEN }}
