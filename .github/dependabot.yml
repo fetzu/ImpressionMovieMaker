@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore: "
+    reviewers:
+      - "fetzu"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "build: "
+    reviewers:
+      - "fetzu"
