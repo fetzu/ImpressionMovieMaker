@@ -1,13 +1,12 @@
 name: Build and Release
-
 on:
   push:
+    branches:
+      - main  # Assuming your main branch is called 'main'
     tags:
       - '*'
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 
 jobs:
   build:
@@ -21,7 +20,6 @@ jobs:
     steps:
       # Check-out repository
       - uses: actions/checkout@v4
-
       - name: OS specific run
         uses: KnicKnic/os-specific-run@v1.0.4
         with:
@@ -31,8 +29,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+          python-version: '3.10'
+          architecture: 'x64'
           cache: 'pip'
           cache-dependency-path: |
             **/requirements*.txt
@@ -47,8 +45,6 @@ jobs:
           standalone: true
           onefile: true
           enable-plugins: anti-bloat
-          # access-token: ${{ secrets.NUITKA_COMMERCIAL_ACCESS_TOKEN }}
-          # macos-create-app-bundle: ${{ runner.os == 'macOS' }}
           
       # Uploads artifacts
       - name: Upload Artifacts
@@ -58,9 +54,9 @@ jobs:
           path: |
             build/*.exe
             build/*.bin
-            #build/*.app/**/*
             
-  publish:
+  publish_release:
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     strategy:
@@ -76,20 +72,17 @@ jobs:
             artifact_name: ImpressionMovieMaker.exe
             ext: ".exe"
             asset_name: ImpressionMovieMaker-windows-amd64
-
     steps:
     - uses: actions/checkout@v4
-
     - name: Read CHANGELOG
       id: read_release
       shell: bash
       run: |
         r=$(cat CHANGELOG.md)                       
-        r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
-        r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
-        r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
-        echo "::set-output name=RELEASE_BODY::$r"         # <--- Set environment variable
-
+        r="${r//'%'/'%25'}"
+        r="${r//$'\n'/'%0A'}"
+        r="${r//$'\r'/'%0D'}"
+        echo "::set-output name=RELEASE_BODY::$r"
     - name: Download artifacts from build
       uses: bettermarks/action-artifact-download@0.5.1
       with:
@@ -97,13 +90,54 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         artifact_name: ${{ matrix.build }}
         rename: ${{ matrix.artifact_name }}
-
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{ matrix.artifact_name }}
-        asset_name: ImpressionMovieMaker_$tag.${{ matrix.ext }}
+        asset_name: ImpressionMovieMaker_${{ github.ref_name }}${{ matrix.ext }}
         tag: ${{ github.ref }}
         body: |
             ${{ steps.read_release.outputs.RELEASE_BODY }}
+
+  publish_bleeding_edge:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: Linux
+            build: Linux Build
+            artifact_name: ImpressionMovieMaker_bleedingedge.bin
+            ext: ".bin"
+            asset_name: ImpressionMovieMaker_bleedingedge-linux-amd64
+          - os: Windows
+            build: Windows Build
+            artifact_name: ImpressionMovieMaker_bleedingedge.exe
+            ext: ".exe"
+            asset_name: ImpressionMovieMaker_bleedingedge-windows-amd64
+    steps:
+    - uses: actions/checkout@v4
+    - name: Download artifacts from build
+      uses: bettermarks/action-artifact-download@0.5.1
+      with:
+        repo: fetzu/ImpressionMovieMaker
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifact_name: ${{ matrix.build }}
+        rename: ${{ matrix.artifact_name }}
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+    - name: Upload binaries to bleeding edge release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.artifact_name }}
+        asset_name: ImpressionMovieMaker-bleeding-edge-${{ steps.slug.outputs.sha8 }}${{ matrix.ext }}
+        tag: bleeding-edge
+        overwrite: true
+        body: |
+            This is a bleeding edge build of ImpressionMovieMaker.
+            Commit: ${{ github.sha }}
+            Build date: ${{ github.event.head_commit.timestamp }}
