@@ -2,7 +2,7 @@
 
 > **⚠️ IMPORTANT NOTE:** This repository is no longer being actively maintained. Dependencies are being updated automatically (possibly with untested breaking changes) and published as "bleedingedge". Regular version updates may occur occasionally.
 
-<img src="/assets/logo.png" width=50% height=50%>
+<p align="center"><img src="/assets/logo.png" width="50%" height="50%"></p>
 
 ## Installation
 
