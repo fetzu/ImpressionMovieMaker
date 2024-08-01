@@ -97,6 +97,7 @@ jobs:
         file: ${{ matrix.artifact_name }}
         asset_name: ImpressionMovieMaker_${{ github.ref_name }}${{ matrix.ext }}
         tag: ${{ github.ref }}
+        make_latest: true
         body: |
             ${{ steps.read_release.outputs.RELEASE_BODY }}
 
@@ -137,6 +138,8 @@ jobs:
         asset_name: ImpressionMovieMaker-bleeding-edge-${{ steps.slug.outputs.sha8 }}${{ matrix.ext }}
         tag: bleeding-edge
         overwrite: true
+        prerelease: true
+        make_latest: false
         body: |
             This is a bleeding edge build of ImpressionMovieMaker.
             Commit: ${{ github.sha }}
