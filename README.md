@@ -1,23 +1,24 @@
 # ImpressionMovieMaker
+
+> **⚠️ IMPORTANT NOTE:** This repository is no longer being actively maintained. Dependencies are being updated automatically (possibly with untested breaking changes) and published as "bleedingedge". Regular version updates may occur occasionally.
+
 <img src="/assets/logo.png" width=50% height=50%>
 
 ## Installation
 
 ### Requirements:
 - Python 3 (https://www.python.org/downloads/)
-- Imagemagick (https://imagemagick.org/script/download.php) /!\ **Install with options "Install FFMPEG" and "Install legacy utilities" checked o Windows!** /!\
+- Imagemagick (https://imagemagick.org/script/download.php) /!\ **Install with options "Install FFMPEG" and "Install legacy utilities" checked on Windows!** /!\
 
 ### Installation
 After installing Python3 and Imagemagick, download "ImpressionMovieMaker.zip" and extract it. In the command prompt, navigate to the folder and "*pip install -r requirements.txt*"
 
 ## Usage
 Simply run ImpressionMovieMaker.py for a half-assed GUI experience.
-
 For those who like it old-school (and nicer), a CLI interface exists ("*python ImpressionMovieMaker.py --help*" is your friend).
 
 ```
 Usage: ImpressionMovieMaker.py [-hvzpboxdrtsmf] [--troupe=<type>] [--slow|--medium|--fast] [--speed <seconds>] [--gui] [RUSHESFOLDER] [LOGODEBUT] [LOGOFIN] [MUSIQUE] [OUTFILE] [COMPAGNIE] [EXERCICE]
-
   Arguments:
     RUSHESFOLDER      Path to folder containing the rushes.
     LOGODEBUT         Starting logo.
@@ -26,7 +27,6 @@ Usage: ImpressionMovieMaker.py [-hvzpboxdrtsmf] [--troupe=<type>] [--slow|--medi
     OUTFILE           Path for the output file.
     COMPAGNIE         Name of the company.
     EXERCICE          Name of the exercice.
-
   Options:
     -h --help
     -v                Verbose mode.
