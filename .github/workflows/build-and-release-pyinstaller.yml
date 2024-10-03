@@ -1,0 +1,161 @@
+name: Build and Release (with PyInstaller)
+on:
+  push:
+    branches:
+      - main  # Assuming your main branch is called 'main'
+    tags:
+      - '*'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      # Check-out repository
+      - uses: actions/checkout@v4
+
+      # OS specific run: Install dependencies
+      - name: OS specific setup
+        run: |
+          if [[ "${{ matrix.os }}" == "Linux" ]]; then
+            sudo apt-get -y install libfuse2
+          elif [[ "${{ matrix.os }}" == "macOS" ]]; then
+            brew install pyinstaller
+          elif [[ "${{ matrix.os }}" == "Windows" ]]; then
+            choco install pyinstaller
+          else
+            echo "Unsupported OS"
+      
+      # Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          architecture: 'x64'
+          cache: 'pip'
+          cache-dependency-path: |
+            **/requirements*.txt
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # Build python script into a stand-alone executable with PyInstaller
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --onefile ImpressionMovieMaker.py
+
+      # Upload artifacts
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} Build
+          path: dist/ImpressionMovieMaker  # PyInstaller places the executable in the dist folder
+
+  publish_release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: Linux
+            build: Linux Build
+            artifact_name: ImpressionMovieMaker
+            ext: ".bin"
+            asset_name: ImpressionMovieMaker-linux-amd64
+          - os: Windows
+            build: Windows Build
+            artifact_name: ImpressionMovieMaker.exe
+            ext: ".exe"
+            asset_name: ImpressionMovieMaker-windows-amd64
+          - os: macOS
+            build: macOS Build
+            artifact_name: ImpressionMovieMaker
+            ext: ".bin"
+            asset_name: ImpressionMovieMaker-macos-amd64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read CHANGELOG
+        id: read_release
+        shell: bash
+        run: |
+          r=$(cat CHANGELOG.md)                       
+          r="${r//'%'/'%25'}"
+          r="${r//$'\n'/'%0A'}"
+          r="${r//$'\r'/'%0D'}"
+          echo "::set-output name=RELEASE_BODY::$r"
+      - name: Download artifacts from build
+        uses: bettermarks/action-artifact-download@0.5.1
+        with:
+          repo: fetzu/ImpressionMovieMaker
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: ${{ matrix.build }}
+          rename: ${{ matrix.artifact_name }}
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ImpressionMovieMaker_${{ github.ref_name }}${{ matrix.ext }}
+          tag: ${{ github.ref }}
+          make_latest: true
+          body: |
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
+
+  publish_bleeding_edge:
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.event.pull_request.merged == true) }}
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: Linux
+            build: Linux Build
+            artifact_name: ImpressionMovieMaker_bleedingedge.bin
+            ext: ".bin"
+            asset_name: ImpressionMovieMaker_bleedingedge-linux-amd64
+          - os: Windows
+            build: Windows Build
+            artifact_name: ImpressionMovieMaker_bleedingedge.exe
+            ext: ".exe"
+            asset_name: ImpressionMovieMaker_bleedingedge-windows-amd64
+          - os: macOS
+            build: macOS Build
+            artifact_name: ImpressionMovieMaker_bleedingedge.bin
+            ext: ".bin"
+            asset_name: ImpressionMovieMaker_bleedingedge-macos-amd64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts from build
+        uses: bettermarks/action-artifact-download@0.5.1
+        with:
+          repo: fetzu/ImpressionMovieMaker
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: ${{ matrix.build }}
+          rename: ${{ matrix.artifact_name }}
+      - name: Get short SHA
+        id: slug
+        run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+      - name: Upload binaries to bleeding edge release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ImpressionMovieMaker-bleeding-edge-${{ steps.slug.outputs.sha8 }}${{ matrix.ext }}
+          tag: bleeding-edge
+          overwrite: true
+          prerelease: true
+          make_latest: false
+          body: |
+            This is a bleeding edge build of ImpressionMovieMaker.
+            Commit: ${{ github.sha }}
+            Build date: ${{ github.event.head_commit.timestamp }}
