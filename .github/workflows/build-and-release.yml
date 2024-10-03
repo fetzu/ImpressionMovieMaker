@@ -23,8 +23,13 @@ jobs:
       - name: OS specific run
         uses: KnicKnic/os-specific-run@v1.0.4
         with:
-          linux: sudo apt-get -y install libfuse2
+          linux: |
+            sudo apt-get -y install libfuse2 llvm-dev libllvm10 llvm-10
+            export LLVM_CONFIG=/usr/bin/llvm-config-10
           #macos: brew install libomp 
+          windows: |
+            choco install llvm --version=10.0.0
+            set LLVM_CONFIG=C:\Program Files\LLVM\bin\llvm-config.exe
         
       - name: Setup Python
         uses: actions/setup-python@v5
