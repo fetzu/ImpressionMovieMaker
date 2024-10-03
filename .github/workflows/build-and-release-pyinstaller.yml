@@ -22,7 +22,8 @@ jobs:
       - uses: actions/checkout@v4
 
       # OS specific run: Install dependencies
-      - name: OS specific setup
+      - name: OS specific run
+        uses: KnicKnic/os-specific-run@v1.0.4
         with:
           linux: sudo apt-get -y install libfuse2
           macos: brew install pyinstaller
