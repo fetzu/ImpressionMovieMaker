@@ -24,7 +24,10 @@ jobs:
         uses: KnicKnic/os-specific-run@v1.0.4
         with:
           linux: |
-            sudo apt-get -y install libfuse2 llvm-dev libllvm10 llvm-10
+            sudo apt-get -y install libfuse2
+            wget https://apt.llvm.org/llvm.sh
+            chmod +x llvm.sh
+            sudo ./llvm.sh 10
             export LLVM_CONFIG=/usr/bin/llvm-config-10
           #macos: brew install libomp 
           windows: |
