@@ -23,15 +23,10 @@ jobs:
 
       # OS specific run: Install dependencies
       - name: OS specific setup
-        run: |
-          if [[ "${{ matrix.os }}" == "Linux" ]]; then
-            sudo apt-get -y install libfuse2
-          elif [[ "${{ matrix.os }}" == "macOS" ]]; then
-            brew install pyinstaller
-          elif [[ "${{ matrix.os }}" == "Windows" ]]; then
-            choco install pyinstaller
-          else
-            echo "Unsupported OS"
+        with:
+          linux: sudo apt-get -y install libfuse2
+          macos: brew install pyinstaller
+          windows: choco install pyinstaller
       
       # Setup Python
       - name: Setup Python
