@@ -102,7 +102,7 @@ jobs:
             ${{ steps.read_release.outputs.RELEASE_BODY }}
 
   publish_bleeding_edge:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.event.pull_request.merged == true) }}
     needs: build
     runs-on: ubuntu-latest
     strategy:
