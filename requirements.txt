@@ -1,4 +1,4 @@
-certifi==2025.1.31
+certifi==2025.4.26
 charset-normalizer==3.4.1
 colorama==0.4.6
 decorator
@@ -8,10 +8,10 @@ imageio==2.37.0
 imageio-ffmpeg==0.6.0
 moviepy==2.1.2
 numpy==2.2.3
-Pillow==11.2.0
+Pillow==11.2.1
 proglog==0.1.11
 requests==2.32.3
 tqdm==4.67.1
-urllib3==2.3.0
+urllib3==2.4.0
 librosa==0.10.2.post1
-PySimpleGUI==5.0.8.2
+PySimpleGUI==5.0.8.3
