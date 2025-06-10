@@ -10,7 +10,7 @@ moviepy==2.2.1
 numpy==2.2.3
 Pillow==11.2.1
 proglog==0.1.12
-requests==2.32.3
+requests==2.32.4
 tqdm==4.67.1
 urllib3==2.4.0
 librosa==0.10.2.post1
