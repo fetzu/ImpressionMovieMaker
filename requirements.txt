@@ -12,6 +12,6 @@ Pillow==11.2.1
 proglog==0.1.12
 requests==2.32.4
 tqdm==4.67.1
-urllib3==2.4.0
+urllib3==2.5.0
 librosa==0.10.2.post1
 PySimpleGUI==5.0.8.3
