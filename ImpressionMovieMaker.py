@@ -40,16 +40,18 @@ import random
 import datetime
 import warnings
 import librosa
-import PySimpleGUI as gui
+import FreeSimpleGUI as gui
 # NOTE: This fixes the build for windows by only importing the necessary modules from MoviePy
 #from moviepy.editor import *
-from moviepy.video.VideoClip import TextClip
-from moviepy.video.io.VideoFileClip import VideoFileClip
-from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
-from moviepy.video.compositing.concatenate import concatenate_videoclips
-from moviepy.audio.io.AudioFileClip import AudioFileClip
-from moviepy.audio.AudioClip import CompositeAudioClip
-from moviepy.audio.fx import volumex as xfa, audio_fadeout as afx
+from moviepy import (
+    TextClip,
+    VideoFileClip,
+    CompositeVideoClip,
+    concatenate_videoclips,
+    AudioFileClip,
+    CompositeAudioClip
+)
+from moviepy.audio import fx as afx
 from docopt import docopt
 from colorama import init, Fore, Style
 from IMMAssets import LoadAssets

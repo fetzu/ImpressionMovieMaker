@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Transitioned from PySimpleGUI to FreeSimpleGUI to keep the bleeding edge alive
 
 ## [2.1.3] - 2021-10-27
 ### Changed
@@ -37,7 +38,7 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 - Revamped CLI (docopt and README[_FR]) to reflect new changes.
 
 ## [2.0.0] - 2021-09-25
-**The GUI has landed !** 
+**The GUI has landed !**
 
 ### Added
 - There is now a GUI (can be called with GUI, is used by default if no arguments are passed).
@@ -46,10 +47,10 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 
 ## [1.0.1] - 2021-09-19
 ### Changed
-- Removed some unnecessary imports 
+- Removed some unnecessary imports
 
 ## [1.0.0] - 2021-09-19
-**The "I think I'm done with this" release !** 
+**The "I think I'm done with this" release !**
 
 ### Added
 - Hybrid mode that combines both beatFinder™ and onsetFinder™.
@@ -61,13 +62,13 @@ and this project *somewhat* adheres to [Semantic Versioning](https://semver.org/
 - **!Random sequence order argument has been changed from "-s" to "-r".**
 
 ## [0.2.1] - 2021-09-19
-**The stupid mistake hotfix !** 
+**The stupid mistake hotfix !**
 
 ### Changed
 - Fixed typo in console output code which caused program to crash under certain conditions...
 
 ## [0.2.0] - 2021-09-18
-**The music sync update !** 
+**The music sync update !**
 ImpressionMovieMaker is now smarter and syncs to the soundtrack !
 
 ### Added
