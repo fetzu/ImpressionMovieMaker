@@ -1,4 +1,4 @@
-certifi==2025.4.26
+certifi==2025.6.15
 charset-normalizer==3.4.2
 colorama==0.4.6
 decorator
@@ -13,5 +13,5 @@ proglog==0.1.12
 requests==2.32.4
 tqdm==4.67.1
 urllib3==2.5.0
-librosa==0.10.2.post1
+librosa==0.11.0
 PySimpleGUI==5.0.8.3
