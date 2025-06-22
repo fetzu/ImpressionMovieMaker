@@ -21,13 +21,10 @@ jobs:
       # Check-out repository
       - uses: actions/checkout@v4
 
-      # OS specific run: Install dependencies
-      - name: OS specific run
-        uses: KnicKnic/os-specific-run@v1.0.4
-        with:
-          linux: sudo apt-get -y install libfuse2
-          macos: brew install pyinstaller
-          windows: choco install pyinstaller
+      # OS specific run: Install dependencies (only libfuse2 for Linux)
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get -y install libfuse2
       
       # Setup Python
       - name: Setup Python
@@ -44,6 +41,11 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      # Install PyInstaller
+      - name: Install PyInstaller
+        run: |
+          pip install pyinstaller
+
       # Build python script into a stand-alone executable with PyInstaller
       - name: Build with PyInstaller
         run: |
@@ -54,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }} Build
-          path: dist/ImpressionMovieMaker  # PyInstaller places the executable in the dist folder
+          path: dist/ImpressionMovieMaker*  # PyInstaller places the executable in the dist folder
 
   publish_release:
     if: startsWith(github.ref, 'refs/tags/')
