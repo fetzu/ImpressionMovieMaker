@@ -10,8 +10,6 @@ updates:
           - "*"
     commit-message:
       prefix: "chore: "
-    reviewers:
-      - "fetzu"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -23,5 +21,3 @@ updates:
           - "*"
     commit-message:
       prefix: "build: "
-    reviewers:
-      - "fetzu"
