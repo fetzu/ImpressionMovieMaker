@@ -21,10 +21,14 @@ jobs:
       # Check-out repository
       - uses: actions/checkout@v4
 
-      # OS specific run: Install dependencies (only libfuse2 for Linux)
+      # OS specific run: Install dependencies
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get -y install libfuse2
+      
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: brew install gettext
       
       # Setup Python
       - name: Setup Python
@@ -109,9 +113,22 @@ jobs:
           body: |
             ${{ steps.read_release.outputs.RELEASE_BODY }}
 
-  publish_bleeding_edge:
+  delete_bleeding_edge:
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.event.pull_request.merged == true) }}
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete bleeding edge release
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: bleeding-edge
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_release: true
+        continue-on-error: true
+
+  publish_bleeding_edge:
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.event.pull_request.merged == true) }}
+    needs: [build, delete_bleeding_edge]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -148,9 +165,9 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ matrix.artifact_name }}
-          asset_name: ImpressionMovieMaker-bleeding-edge-${{ steps.slug.outputs.sha8 }}${{ matrix.ext }}
+          asset_name: ImpressionMovieMaker-bleeding-edge-${{ runner.os }}-${{ steps.slug.outputs.sha8 }}${{ matrix.ext }}
           tag: bleeding-edge
-          overwrite: true
+          overwrite: false
           prerelease: true
           make_latest: false
           body: |
