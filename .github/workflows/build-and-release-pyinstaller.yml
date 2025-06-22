@@ -66,26 +66,9 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - os: Linux
-            build: Linux Build
-            artifact_name: ImpressionMovieMaker
-            ext: ".bin"
-            asset_name: ImpressionMovieMaker-linux-amd64
-          - os: Windows
-            build: Windows Build
-            artifact_name: ImpressionMovieMaker.exe
-            ext: ".exe"
-            asset_name: ImpressionMovieMaker-windows-amd64
-          - os: macOS
-            build: macOS Build
-            artifact_name: ImpressionMovieMaker
-            ext: ".bin"
-            asset_name: ImpressionMovieMaker-macos-amd64
     steps:
       - uses: actions/checkout@v4
+      
       - name: Read CHANGELOG
         id: read_release
         shell: bash
@@ -95,19 +78,59 @@ jobs:
           r="${r//$'\n'/'%0A'}"
           r="${r//$'\r'/'%0D'}"
           echo "::set-output name=RELEASE_BODY::$r"
-      - name: Download artifacts from build
+          
+      - name: Download Linux artifacts
         uses: bettermarks/action-artifact-download@0.5.1
         with:
           repo: fetzu/ImpressionMovieMaker
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifact_name: ${{ matrix.build }}
-          rename: ${{ matrix.artifact_name }}
-      - name: Upload binaries to release
+          artifact_name: Linux Build
+          rename: ImpressionMovieMaker-linux
+          
+      - name: Download Windows artifacts
+        uses: bettermarks/action-artifact-download@0.5.1
+        with:
+          repo: fetzu/ImpressionMovieMaker
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: Windows Build
+          rename: ImpressionMovieMaker-windows.exe
+          
+      - name: Download macOS artifacts
+        uses: bettermarks/action-artifact-download@0.5.1
+        with:
+          repo: fetzu/ImpressionMovieMaker
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: macOS Build
+          rename: ImpressionMovieMaker-macos
+      
+      - name: Upload Linux binary to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.artifact_name }}
-          asset_name: ImpressionMovieMaker_${{ github.ref_name }}${{ matrix.ext }}
+          file: ImpressionMovieMaker-linux
+          asset_name: ImpressionMovieMaker_${{ github.ref_name }}-linux-amd64.bin
+          tag: ${{ github.ref }}
+          make_latest: true
+          body: |
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
+            
+      - name: Upload Windows binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ImpressionMovieMaker-windows.exe
+          asset_name: ImpressionMovieMaker_${{ github.ref_name }}-windows-amd64.exe
+          tag: ${{ github.ref }}
+          make_latest: true
+          body: |
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
+            
+      - name: Upload macOS binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ImpressionMovieMaker-macos
+          asset_name: ImpressionMovieMaker_${{ github.ref_name }}-macos-amd64.bin
           tag: ${{ github.ref }}
           make_latest: true
           body: |
