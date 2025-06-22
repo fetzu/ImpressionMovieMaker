@@ -130,44 +130,75 @@ jobs:
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.event.pull_request.merged == true) }}
     needs: [build, delete_bleeding_edge]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - os: Linux
-            build: Linux Build
-            artifact_name: ImpressionMovieMaker_bleedingedge.bin
-            ext: ".bin"
-            asset_name: ImpressionMovieMaker_bleedingedge-linux-amd64
-          - os: Windows
-            build: Windows Build
-            artifact_name: ImpressionMovieMaker_bleedingedge.exe
-            ext: ".exe"
-            asset_name: ImpressionMovieMaker_bleedingedge-windows-amd64
-          - os: macOS
-            build: macOS Build
-            artifact_name: ImpressionMovieMaker_bleedingedge.bin
-            ext: ".bin"
-            asset_name: ImpressionMovieMaker_bleedingedge-macos-amd64
     steps:
       - uses: actions/checkout@v4
-      - name: Download artifacts from build
+      
+      - name: Download Linux artifacts
         uses: bettermarks/action-artifact-download@0.5.1
         with:
           repo: fetzu/ImpressionMovieMaker
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifact_name: ${{ matrix.build }}
-          rename: ${{ matrix.artifact_name }}
+          artifact_name: Linux Build
+          rename: ImpressionMovieMaker-linux
+          
+      - name: Download Windows artifacts
+        uses: bettermarks/action-artifact-download@0.5.1
+        with:
+          repo: fetzu/ImpressionMovieMaker
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: Windows Build
+          rename: ImpressionMovieMaker-windows.exe
+          
+      - name: Download macOS artifacts
+        uses: bettermarks/action-artifact-download@0.5.1
+        with:
+          repo: fetzu/ImpressionMovieMaker
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifact_name: macOS Build
+          rename: ImpressionMovieMaker-macos
+      
       - name: Get short SHA
         id: slug
         run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
-      - name: Upload binaries to bleeding edge release
+        
+      - name: Upload Linux binary
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.artifact_name }}
-          asset_name: ImpressionMovieMaker-bleeding-edge-${{ runner.os }}-${{ steps.slug.outputs.sha8 }}${{ matrix.ext }}
+          file: ImpressionMovieMaker-linux
+          asset_name: ImpressionMovieMaker-bleeding-edge-linux-${{ steps.slug.outputs.sha8 }}.bin
           tag: bleeding-edge
-          overwrite: false
+          release_name: "Bleeding Edge Build"
+          prerelease: true
+          make_latest: false
+          body: |
+            This is a bleeding edge build of ImpressionMovieMaker.
+            Commit: ${{ github.sha }}
+            Build date: ${{ github.event.head_commit.timestamp }}
+            
+      - name: Upload Windows binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ImpressionMovieMaker-windows.exe
+          asset_name: ImpressionMovieMaker-bleeding-edge-windows-${{ steps.slug.outputs.sha8 }}.exe
+          tag: bleeding-edge
+          release_name: "Bleeding Edge Build"
+          prerelease: true
+          make_latest: false
+          body: |
+            This is a bleeding edge build of ImpressionMovieMaker.
+            Commit: ${{ github.sha }}
+            Build date: ${{ github.event.head_commit.timestamp }}
+            
+      - name: Upload macOS binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ImpressionMovieMaker-macos
+          asset_name: ImpressionMovieMaker-bleeding-edge-macos-${{ steps.slug.outputs.sha8 }}.bin
+          tag: bleeding-edge
+          release_name: "Bleeding Edge Build"
           prerelease: true
           make_latest: false
           body: |
