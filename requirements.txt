@@ -8,7 +8,7 @@ imageio==2.37.0
 imageio-ffmpeg==0.6.0
 moviepy==2.2.1
 numpy==2.2.3
-Pillow==11.2.1
+Pillow==11.3.0
 proglog==0.1.12
 requests==2.32.4
 tqdm==4.67.1
