@@ -19,7 +19,7 @@ jobs:
     
     steps:
       # Check-out repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # OS specific run: Install dependencies
       - name: Install Linux dependencies
@@ -67,7 +67,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Read CHANGELOG
         id: read_release
@@ -154,7 +154,7 @@ jobs:
     needs: [build, delete_bleeding_edge]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Download Linux artifacts
         uses: bettermarks/action-artifact-download@0.5.1
