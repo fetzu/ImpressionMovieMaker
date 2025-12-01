@@ -19,7 +19,7 @@ jobs:
     
     steps:
       # Check-out repository
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: OS specific run
         uses: KnicKnic/os-specific-run@v1.0.4
         with:
@@ -81,7 +81,7 @@ jobs:
             ext: ".exe"
             asset_name: ImpressionMovieMaker-windows-amd64
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Read CHANGELOG
       id: read_release
       shell: bash
@@ -127,7 +127,7 @@ jobs:
             ext: ".exe"
             asset_name: ImpressionMovieMaker_bleedingedge-windows-amd64
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Download artifacts from build
       uses: bettermarks/action-artifact-download@0.5.1
       with:
