@@ -1,4 +1,4 @@
-certifi==2026.5.20
+certifi==2026.6.17
 charset-normalizer==3.4.7
 colorama==0.4.6
 decorator
@@ -7,11 +7,11 @@ idna==3.18
 imageio==2.37.3
 imageio-ffmpeg==0.6.0
 moviepy==2.2.1
-numpy==2.4.6
-Pillow==12.2.0
+numpy==2.5.0
+Pillow==12.3.0
 proglog==0.1.12
 requests==2.34.2
-tqdm==4.67.3
+tqdm==4.68.3
 urllib3==2.7.0
 librosa==0.11.0
 FreeSimpleGUI==5.2.0.post1
